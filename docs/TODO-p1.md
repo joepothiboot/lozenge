@@ -1,7 +1,8 @@
 # Phase 1 TODO: untyped IR
 
 Spec: [SEMANTICS.md](SEMANTICS.md). Each step names the tests that should go
-green. Run a group with, e.g., `stack test --test-arguments='-p Eval'`.
+green. Run a group with, e.g., `stack test --test-arguments='-p Eval.'` (the
+dot keeps out Phase 2's `EvalT` group).
 Hints are rung 1 (a question). Ask for the next rung when you want it.
 
 ## 1. `Lozenge.Expr.validValue`

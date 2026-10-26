@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module ExprGen (genExpr, shrinkExpr, testEnv) where
+module ExprGen (genExpr, genPayload, shrinkExpr, testEnv) where
 
 import Data.Map.Strict qualified as Map
 import Lozenge.Expr

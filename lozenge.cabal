@@ -14,9 +14,12 @@ library
   hs-source-dirs:   src
   exposed-modules:
     Lozenge.Eval
+    Lozenge.EvalT
     Lozenge.Expr
     Lozenge.Parse
     Lozenge.Pretty
+    Lozenge.Typecheck
+    Lozenge.Typed
   build-depends:
     , base
     , containers
@@ -42,10 +45,14 @@ test-suite spec
     Golden
     Lozenge.EdgeSpec
     Lozenge.EvalSpec
+    Lozenge.EvalTSpec
     Lozenge.ExprSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
+    Lozenge.TypecheckSpec
+    Lozenge.TypedSpec
     Props
+    TExprGen
     Z3
   build-depends:
     , base
