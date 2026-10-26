@@ -40,6 +40,7 @@ test-suite spec
   other-modules:
     ExprGen
     Golden
+    Lozenge.EdgeSpec
     Lozenge.EvalSpec
     Lozenge.ExprSpec
     Lozenge.ParseSpec

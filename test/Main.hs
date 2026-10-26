@@ -3,6 +3,7 @@
 module Main (main) where
 
 import Golden (goldenText)
+import Lozenge.EdgeSpec qualified as EdgeSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.ParseSpec qualified as ParseSpec
@@ -23,6 +24,7 @@ main =
         ParseSpec.tests,
         EvalSpec.tests,
         PrettySpec.tests,
+        EdgeSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
