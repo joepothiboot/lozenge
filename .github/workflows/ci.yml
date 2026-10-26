@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: haskell-actions/setup@v2.12.1
+        with:
+          enable-stack: true
+          stack-no-global: true
+          stack-version: "3.11.1"
+
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.stack
+            .stack-work
+          key: ${{ runner.os }}-${{ github.job }}-${{ hashFiles('stack.yaml.lock', 'lozenge.cabal') }}
+          restore-keys: ${{ runner.os }}-${{ github.job }}-
+
+      - name: Install z3 (ubuntu)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y z3
+
+      - name: Install z3 (macos)
+        if: runner.os == 'macOS'
+        run: brew install z3
+
+      - run: z3 --version
+
+      - run: stack build --test --no-run-tests --ghc-options=-Werror
+
+      - run: stack test
+
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      FOURMOLU_VERSION: 0.21.0.0
+      HLINT_VERSION: "3.10"
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install fourmolu and hlint
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL -o "$RUNNER_TEMP/fourmolu.zip" \
+            "https://github.com/fourmolu/fourmolu/releases/download/v$FOURMOLU_VERSION/fourmolu-$FOURMOLU_VERSION-linux-x86_64.zip"
+          unzip -j -o "$RUNNER_TEMP/fourmolu.zip" -d "$RUNNER_TEMP/bin"
+          curl -fsSL "https://github.com/ndmitchell/hlint/releases/download/v$HLINT_VERSION/hlint-$HLINT_VERSION-x86_64-linux.tar.gz" \
+            | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/hlint-$HLINT_VERSION" >> "$GITHUB_PATH"
+
+      - run: fourmolu --mode check src app test
+
+      - run: hlint src app test
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: haskell-actions/setup@v2.12.1
+        with:
+          enable-stack: true
+          stack-no-global: true
+          stack-version: "3.11.1"
+
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            ~/.stack
+            .stack-work
+          key: ${{ runner.os }}-${{ github.job }}-${{ hashFiles('stack.yaml.lock', 'lozenge.cabal') }}
+          restore-keys: ${{ runner.os }}-${{ github.job }}-
+
+      - run: stack haddock --no-haddock-deps 2>&1 | tee haddock.log
+
+      - name: Require 100% Haddock coverage
+        run: |
+          grep -E '^ *[0-9]+% \(' haddock.log
+          if grep -E '^ *[0-9]+% \(' haddock.log | grep -v '^ *100% '; then exit 1; fi

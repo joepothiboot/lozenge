@@ -1,0 +1,4 @@
+indentation: 2
+comma-style: trailing
+haddock-style: single-line
+indent-wheres: true

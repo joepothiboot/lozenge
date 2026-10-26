@@ -1,5 +1,7 @@
 # lozenge
 
+[![CI](https://github.com/joepothiboot/lozenge/actions/workflows/ci.yml/badge.svg)](https://github.com/joepothiboot/lozenge/actions/workflows/ci.yml)
+
 A small expression language written in Haskell.
 
 ## Testing
