@@ -6,6 +6,7 @@ import Golden (goldenText)
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.ParseSpec qualified as ParseSpec
+import Lozenge.PrettySpec qualified as PrettySpec
 import Props (props)
 import System.Process (readProcess)
 import Test.Tasty (defaultMain, testGroup)
@@ -21,6 +22,7 @@ main =
       [ ExprSpec.tests,
         ParseSpec.tests,
         EvalSpec.tests,
+        PrettySpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

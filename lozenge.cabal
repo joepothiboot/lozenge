@@ -16,7 +16,13 @@ library
     Lozenge.Eval
     Lozenge.Expr
     Lozenge.Parse
-  build-depends:    base
+    Lozenge.Pretty
+  build-depends:
+    , base
+    , containers
+    , megaparsec
+    , prettyprinter
+    , text
   default-language: GHC2021
 
 executable lozenge
@@ -32,16 +38,21 @@ test-suite spec
   hs-source-dirs:   test
   main-is:          Main.hs
   other-modules:
+    ExprGen
     Golden
     Lozenge.EvalSpec
     Lozenge.ExprSpec
     Lozenge.ParseSpec
+    Lozenge.PrettySpec
     Props
     Z3
   build-depends:
     , base
     , bytestring
+    , containers
     , directory
+    , lozenge
+    , megaparsec
     , process
     , tasty
     , tasty-golden
