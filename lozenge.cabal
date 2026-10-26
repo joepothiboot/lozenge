@@ -31,5 +31,21 @@ test-suite spec
   type:             exitcode-stdio-1.0
   hs-source-dirs:   test
   main-is:          Main.hs
-  build-depends:    base, tasty
+  other-modules:
+    Golden
+    Lozenge.EvalSpec
+    Lozenge.ExprSpec
+    Lozenge.ParseSpec
+    Props
+    Z3
+  build-depends:
+    , base
+    , bytestring
+    , directory
+    , process
+    , tasty
+    , tasty-golden
+    , tasty-hunit
+    , tasty-quickcheck
+    , text
   default-language: GHC2021
