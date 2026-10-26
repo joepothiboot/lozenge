@@ -1,0 +1,35 @@
+cabal-version: 3.0
+name:          lozenge
+version:       0.1.0.0
+license:       MIT
+license-file:  LICENSE
+author:        Watcharapong Joe Pothiboot
+build-type:    Simple
+
+common warnings
+  ghc-options: -Wall
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  exposed-modules:
+    Lozenge.Eval
+    Lozenge.Expr
+    Lozenge.Parse
+  build-depends:    base
+  default-language: GHC2021
+
+executable lozenge
+  import:           warnings
+  hs-source-dirs:   app
+  main-is:          Main.hs
+  build-depends:    base
+  default-language: GHC2021
+
+test-suite spec
+  import:           warnings
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Main.hs
+  build-depends:    base, tasty
+  default-language: GHC2021
