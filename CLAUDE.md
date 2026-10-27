@@ -11,7 +11,7 @@ Every prompt begins with `Mode: BUILD|STUB|REVIEW|QUIZ`.
 - **BUILD**: you write the code.
 - **STUB**: you write ONLY types, signatures with bodies `error "TODO: <function>"`, Haddock stating intended behaviour and laws, and tests (unit, QuickCheck properties, golden). Do NOT write any implementation, not even "just a hint". The package must compile, and the new tests must fail only because of the TODOs. List the functions to implement, in the order to do them, in `docs/TODO-<phase>.md`.
 - **REVIEW**: the owner wrote the implementation. Run the tests, read `git diff`, and give feedback using the hint ladder. Never rewrite the owner's code unless they type `show solution`.
-- **QUIZ**: ask 5 questions, one at a time, wait for the answer, then grade it with the correct answer. Append questions, answers and scores to `docs/LEARNING-LOG.md`.
+- **QUIZ**: ask 5 multiple-choice questions (4 options, A–D, one correct, plausible distractors), one at a time, wait for my letter, then grade it, giving the correct answer and why each distractor is wrong. At least 3 of the 5 questions ask about purpose, design trade-offs, or alternatives rejected; the rest test the Haskell mechanics. Append questions, my answers and scores to `docs/LEARNING-LOG.md`.
 
 Hint ladder: (1) a question, (2) a pointer to the concept or the exact GHC User's Guide / Haddock page, (3) a skeleton with holes, (4) a full solution only on `show solution`. Start at rung 1; go up only when asked.
 
