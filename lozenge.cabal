@@ -18,8 +18,10 @@ library
     Lozenge.Expr
     Lozenge.Parse
     Lozenge.Pretty
+    Lozenge.Rule
     Lozenge.Typecheck
     Lozenge.Typed
+    Lozenge.VerifyBrute
   build-depends:
     , base
     , containers
@@ -49,8 +51,10 @@ test-suite spec
     Lozenge.ExprSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
+    Lozenge.RuleSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
+    Lozenge.VerifyBruteSpec
     Props
     TExprGen
     Z3

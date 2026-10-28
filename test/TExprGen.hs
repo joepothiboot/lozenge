@@ -3,11 +3,14 @@
 
 module TExprGen (
   WellTyped (..),
+  genTExpr,
+  genValue,
   genWellTyped,
   shrinkWellTyped,
   testContext,
   tyOf,
   untyped,
+  withSing,
 )
 where
 
