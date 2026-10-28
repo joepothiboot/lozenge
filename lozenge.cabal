@@ -21,14 +21,17 @@ library
     Lozenge.Rule
     Lozenge.RuleParse
     Lozenge.Smt
+    Lozenge.Solver
     Lozenge.Typecheck
     Lozenge.Typed
     Lozenge.VerifyBrute
   build-depends:
     , base
     , containers
+    , directory
     , megaparsec
     , prettyprinter
+    , process
     , text
   default-language: GHC2021
 
@@ -57,6 +60,7 @@ test-suite spec
     Lozenge.RuleParseSpec
     Lozenge.RuleSpec
     Lozenge.SmtSpec
+    Lozenge.SolverSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
     Lozenge.VerifyBruteSpec

@@ -13,6 +13,7 @@ import Lozenge.PrettySpec qualified as PrettySpec
 import Lozenge.RuleParseSpec qualified as RuleParseSpec
 import Lozenge.RuleSpec qualified as RuleSpec
 import Lozenge.SmtSpec qualified as SmtSpec
+import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
 import Lozenge.VerifyBruteSpec qualified as VerifyBruteSpec
@@ -41,6 +42,7 @@ main =
         RuleParseSpec.tests,
         CorpusSpec.tests,
         SmtSpec.tests,
+        SolverSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
