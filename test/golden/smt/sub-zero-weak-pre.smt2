@@ -1,0 +1,8 @@
+(set-option :produce-models true)
+(set-logic QF_BV)
+(declare-const v_x (_ BitVec 8))
+(declare-const v_y (_ BitVec 8))
+(assert (bvult v_x (bvadd v_y (_ bv1 8))))
+(assert (not (= (bvsub v_x v_y) (_ bv0 8))))
+(check-sat)
+(get-value (v_x v_y))

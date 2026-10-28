@@ -1,0 +1,7 @@
+(set-option :produce-models true)
+(set-logic QF_BV)
+(declare-const v__ (_ BitVec 8))
+(declare-const v_and (_ BitVec 8))
+(assert (not (= (bvnot (bvand v__ v_and)) (bvor (bvnot v__) (bvnot v_and)))))
+(check-sat)
+(get-value (v__ v_and))

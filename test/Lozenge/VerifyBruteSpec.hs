@@ -8,13 +8,13 @@ import Lozenge.Eval (eval)
 import Lozenge.Expr
 import Lozenge.Rule
 import Lozenge.Typecheck (Context)
-import Lozenge.Typed (SingTy (SBool), Ty (..), erase)
+import Lozenge.Typed (Ty (..))
 import Lozenge.VerifyBrute
 import Props (props)
-import TExprGen (genTExpr, genValue, untyped, withSing)
+import TExprGen (genRule, genValue, untyped, withSing)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertBool, testCase, (@?=))
-import Test.Tasty.QuickCheck (Gen, choose, counterexample, cover, elements, forAll, frequency, property, testProperty, (===))
+import Test.Tasty.QuickCheck (Gen, choose, counterexample, cover, forAll, property, testProperty, (===))
 
 tests :: TestTree
 tests =
@@ -133,23 +133,6 @@ shlLshr =
 
 shl4Zero :: Rule
 shl4Zero = rule "shl-4-zero" Generic bv8x (Bin Shl x (bv 8 4)) (bv 8 0)
-
-genCtx :: Context
-genCtx = Map.fromList [("p", TBool), ("x", TBV 4), ("y", TBV 4)]
-
-genRule :: Gen Rule
-genRule = do
-  ty <- elements [TBool, TBV 4]
-  let term = withSing ty (\s -> erase <$> genTExpr genCtx s 4)
-  lhs <- term
-  rhs <- frequency [(2, pure lhs), (2, pure (commute lhs)), (3, term)]
-  pre <- frequency [(2, pure Nothing), (1, Just . erase <$> genTExpr genCtx SBool 2)]
-  w <- elements [Fixed, Generic]
-  pure (Rule "generated" w genCtx lhs rhs pre)
-  where
-    commute (Bin op a b) | op `elem` [Add, Mul, And, Or, Xor] = Bin op b a
-    commute (Cmp Eq a b) = Cmp Eq b a
-    commute e = e
 
 genEnv :: Context -> Gen Env
 genEnv = traverse (\ty -> withSing ty (fmap untyped . genValue))

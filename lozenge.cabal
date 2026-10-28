@@ -20,6 +20,7 @@ library
     Lozenge.Pretty
     Lozenge.Rule
     Lozenge.RuleParse
+    Lozenge.Smt
     Lozenge.Typecheck
     Lozenge.Typed
     Lozenge.VerifyBrute
@@ -55,6 +56,7 @@ test-suite spec
     Lozenge.PrettySpec
     Lozenge.RuleParseSpec
     Lozenge.RuleSpec
+    Lozenge.SmtSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
     Lozenge.VerifyBruteSpec

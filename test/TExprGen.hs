@@ -3,6 +3,7 @@
 
 module TExprGen (
   WellTyped (..),
+  genRule,
   genTExpr,
   genValue,
   genWellTyped,
@@ -19,9 +20,10 @@ import ExprGen (genPayload)
 import GHC.TypeNats (Natural, fromSNat, withSomeSNat)
 import Lozenge.Expr (Env)
 import Lozenge.Expr qualified as U
+import Lozenge.Rule (Rule (..), RuleWidth (..))
 import Lozenge.Typecheck (Context)
 import Lozenge.Typed
-import Test.Tasty.QuickCheck
+import Test.Tasty.QuickCheck hiding (Fixed)
 
 testContext :: Context
 testContext =
@@ -119,3 +121,20 @@ shrinkEnv env = [Map.insert x v' env | (x, v) <- Map.toList env, v' <- shrinkU v
   where
     shrinkU (U.VBool b) = [U.VBool False | b]
     shrinkU (U.VBV w v) = U.VBV w <$> shrinkIntegral v
+
+genCtx :: Context
+genCtx = Map.fromList [("p", TBool), ("x", TBV 4), ("y", TBV 4)]
+
+genRule :: Gen Rule
+genRule = do
+  ty <- elements [TBool, TBV 4]
+  let term = withSing ty (\s -> erase <$> genTExpr genCtx s 4)
+  lhs <- term
+  rhs <- frequency [(2, pure lhs), (2, pure (commute lhs)), (3, term)]
+  pre <- frequency [(2, pure Nothing), (1, Just . erase <$> genTExpr genCtx SBool 2)]
+  w <- elements [Fixed, Generic]
+  pure (Rule "generated" w genCtx lhs rhs pre)
+  where
+    commute (U.Bin op a b) | op `elem` [U.Add, U.Mul, U.And, U.Or, U.Xor] = U.Bin op b a
+    commute (U.Cmp U.Eq a b) = U.Cmp U.Eq b a
+    commute e = e
