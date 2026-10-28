@@ -17,6 +17,7 @@ import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
 import Lozenge.VerifyBruteSpec qualified as VerifyBruteSpec
+import Lozenge.VerifySmtSpec qualified as VerifySmtSpec
 import Props (props)
 import System.Process (readProcess)
 import Test.Tasty (defaultMain, testGroup)
@@ -43,6 +44,7 @@ main =
         CorpusSpec.tests,
         SmtSpec.tests,
         SolverSpec.tests,
+        VerifySmtSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

@@ -25,11 +25,13 @@ library
     Lozenge.Typecheck
     Lozenge.Typed
     Lozenge.VerifyBrute
+    Lozenge.VerifySmt
   build-depends:
     , base
     , containers
     , directory
     , megaparsec
+    , mtl
     , prettyprinter
     , process
     , text
@@ -64,6 +66,7 @@ test-suite spec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
     Lozenge.VerifyBruteSpec
+    Lozenge.VerifySmtSpec
     Props
     TExprGen
     Z3
@@ -74,6 +77,7 @@ test-suite spec
     , directory
     , lozenge
     , megaparsec
+    , mtl
     , process
     , tasty
     , tasty-golden
