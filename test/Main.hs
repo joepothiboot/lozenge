@@ -3,12 +3,14 @@
 module Main (main) where
 
 import Golden (goldenText)
+import Lozenge.CorpusSpec qualified as CorpusSpec
 import Lozenge.EdgeSpec qualified as EdgeSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.EvalTSpec qualified as EvalTSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.ParseSpec qualified as ParseSpec
 import Lozenge.PrettySpec qualified as PrettySpec
+import Lozenge.RuleParseSpec qualified as RuleParseSpec
 import Lozenge.RuleSpec qualified as RuleSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
@@ -35,6 +37,8 @@ main =
         TypecheckSpec.tests,
         RuleSpec.tests,
         VerifyBruteSpec.tests,
+        RuleParseSpec.tests,
+        CorpusSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

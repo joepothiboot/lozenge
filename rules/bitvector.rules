@@ -1,0 +1,86 @@
+; Bitvector rewrite rules: 22 valid, 8 deliberately wrong.
+;
+; A rule that writes its constants as (const w v) is generic: it is checked at
+; every width the verifier is given, and v keeps its low w bits there (so
+; (const w 2) is 0 at width 1). A rule with no constants at all is generic too.
+; A rule with concrete constants, e.g. (const 4 8), is checked at that width only.
+;
+; Every wrong rule has a comment: WRONG at widths <list>, then why. The
+; verdicts at widths 1-6 are in test/golden/corpus-verdicts.txt.
+
+; --- identities ---------------------------------------------------------------
+
+(rule add-zero (add ?x (const w 0)) => ?x)
+(rule mul-one (mul ?x (const w 1)) => ?x)
+(rule mul-zero (mul ?x (const w 0)) => (const w 0))
+(rule xor-self (xor ?x ?x) => (const w 0))
+(rule sub-self (sub ?x ?x) => (const w 0))
+(rule and-ones (and ?x (not (const w 0))) => ?x)
+(rule not-not (not (not ?x)) => ?x)
+(rule neg-neg (neg (neg ?x)) => ?x)
+
+; WRONG at widths 2-6: subtraction is not commutative; x - y = y - x only
+; when 2(x - y) = 0 mod 2^w, which holds for every x, y only at width 1.
+(rule sub-comm (sub ?x ?y) => (sub ?y ?x))
+
+; WRONG at widths 1-6: ~x = -x - 1, never -x.
+(rule not-to-neg (not ?x) => (neg ?x))
+
+; --- strength reductions ------------------------------------------------------
+
+(rule mul-2-to-shl (mul ?x (const w 2)) => (shl ?x (const w 1)))
+(rule add-self-to-shl (add ?x ?x) => (shl ?x (const w 1)))
+(rule neg-to-not-add (neg ?x) => (add (not ?x) (const w 1)))
+(rule sub-to-add-neg (sub ?x ?y) => (add ?x (neg ?y)))
+
+; WRONG at widths 1-2 and 5-6: a shift by 4 clears every bit only when 4 >= w.
+; At widths 1 and 2 the constant 4 truncates to 0, so it does not shift at all.
+(rule shl-4-zero (shl ?x (const w 4)) => (const w 0))
+
+; WRONG at widths 1-6: add is or only when no bit position carries (1 + 1).
+(rule add-to-or (add ?x ?y) => (or ?x ?y))
+
+; --- De Morgan ----------------------------------------------------------------
+
+(rule de-morgan-and (not (and ?x ?y)) => (or (not ?x) (not ?y)))
+(rule de-morgan-or (not (or ?x ?y)) => (and (not ?x) (not ?y)))
+
+; --- comparisons --------------------------------------------------------------
+
+(rule ult-self (ult ?x ?x) => false)
+(rule eq-self (= ?x ?x) => true)
+
+; WRONG at widths 1-6: unsigned and signed order differ once the top bit is set.
+(rule ult-to-slt (ult ?x ?y) => (slt ?x ?y))
+
+; WRONG at every width (it is fixed at 4 bits): x is negative iff x >= 8,
+; i.e. 7 < x; with 8 the rule misses x = 8.
+(rule slt-zero-off-by-one (slt ?x (const 4 0)) => (ult (const 4 8) ?x))
+
+; --- ite simplifications ------------------------------------------------------
+
+(rule ite-same (ite ?p ?x ?x) => ?x)
+(rule ite-true (ite true ?x ?y) => ?x)
+(rule ite-eq-select (ite (= ?x ?y) ?x ?y) => ?y)
+
+; WRONG at widths 1-6: lhs is min(x, y), rhs is max(x, y).
+(rule ite-min-to-max (ite (ult ?x ?y) ?x ?y) => (ite (ult ?y ?x) ?x ?y))
+
+; --- valid only with a precondition -------------------------------------------
+
+; Fixed at 4 bits: shifting left then right loses the top bit unless it is 0.
+(rule shl-lshr (lshr (shl ?x (const 4 1)) (const 4 1)) => ?x
+  :if (ult ?x (const 4 8)))
+
+; x >> k is 0 when x < 2^k; when k >= w, 1 << k is 0 and the precondition is false.
+(rule lshr-small (lshr ?x ?k) => (const w 0)
+  :if (ult ?x (shl (const w 1) ?k)))
+
+; x < x + 1 unless x + 1 wraps, i.e. unless x is all ones.
+(rule ult-succ (ult ?x (add ?x (const w 1))) => true
+  :if (ult ?x (not (const w 0))))
+
+; WRONG at widths 2-6: the precondition says x <= y, but x - y = 0 needs x = y.
+; At width 1, y + 1 wraps to 0 when y = 1, which happens to exclude x = 0, y = 1.
+(rule sub-zero-weak-pre (sub ?x ?y) => (const w 0)
+  :if (ult ?x (add ?y (const w 1))))

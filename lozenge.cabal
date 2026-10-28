@@ -19,6 +19,7 @@ library
     Lozenge.Parse
     Lozenge.Pretty
     Lozenge.Rule
+    Lozenge.RuleParse
     Lozenge.Typecheck
     Lozenge.Typed
     Lozenge.VerifyBrute
@@ -45,12 +46,14 @@ test-suite spec
   other-modules:
     ExprGen
     Golden
+    Lozenge.CorpusSpec
     Lozenge.EdgeSpec
     Lozenge.EvalSpec
     Lozenge.EvalTSpec
     Lozenge.ExprSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
+    Lozenge.RuleParseSpec
     Lozenge.RuleSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec

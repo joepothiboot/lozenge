@@ -1,0 +1,180 @@
+add-zero @1: valid
+add-zero @2: valid
+add-zero @3: valid
+add-zero @4: valid
+add-zero @5: valid
+add-zero @6: valid
+mul-one @1: valid
+mul-one @2: valid
+mul-one @3: valid
+mul-one @4: valid
+mul-one @5: valid
+mul-one @6: valid
+mul-zero @1: valid
+mul-zero @2: valid
+mul-zero @3: valid
+mul-zero @4: valid
+mul-zero @5: valid
+mul-zero @6: valid
+xor-self @1: valid
+xor-self @2: valid
+xor-self @3: valid
+xor-self @4: valid
+xor-self @5: valid
+xor-self @6: valid
+sub-self @1: valid
+sub-self @2: valid
+sub-self @3: valid
+sub-self @4: valid
+sub-self @5: valid
+sub-self @6: valid
+and-ones @1: valid
+and-ones @2: valid
+and-ones @3: valid
+and-ones @4: valid
+and-ones @5: valid
+and-ones @6: valid
+not-not @1: valid
+not-not @2: valid
+not-not @3: valid
+not-not @4: valid
+not-not @5: valid
+not-not @6: valid
+neg-neg @1: valid
+neg-neg @2: valid
+neg-neg @3: valid
+neg-neg @4: valid
+neg-neg @5: valid
+neg-neg @6: valid
+sub-comm @1: valid
+sub-comm @2: x = 0x0, y = 0x1: lhs = 0x3, rhs = 0x1
+sub-comm @3: x = 0x0, y = 0x1: lhs = 0x7, rhs = 0x1
+sub-comm @4: x = 0x0, y = 0x1: lhs = 0xf, rhs = 0x1
+sub-comm @5: x = 0x00, y = 0x01: lhs = 0x1f, rhs = 0x01
+sub-comm @6: x = 0x00, y = 0x01: lhs = 0x3f, rhs = 0x01
+not-to-neg @1: x = 0x0: lhs = 0x1, rhs = 0x0
+not-to-neg @2: x = 0x0: lhs = 0x3, rhs = 0x0
+not-to-neg @3: x = 0x0: lhs = 0x7, rhs = 0x0
+not-to-neg @4: x = 0x0: lhs = 0xf, rhs = 0x0
+not-to-neg @5: x = 0x00: lhs = 0x1f, rhs = 0x00
+not-to-neg @6: x = 0x00: lhs = 0x3f, rhs = 0x00
+mul-2-to-shl @1: valid
+mul-2-to-shl @2: valid
+mul-2-to-shl @3: valid
+mul-2-to-shl @4: valid
+mul-2-to-shl @5: valid
+mul-2-to-shl @6: valid
+add-self-to-shl @1: valid
+add-self-to-shl @2: valid
+add-self-to-shl @3: valid
+add-self-to-shl @4: valid
+add-self-to-shl @5: valid
+add-self-to-shl @6: valid
+neg-to-not-add @1: valid
+neg-to-not-add @2: valid
+neg-to-not-add @3: valid
+neg-to-not-add @4: valid
+neg-to-not-add @5: valid
+neg-to-not-add @6: valid
+sub-to-add-neg @1: valid
+sub-to-add-neg @2: valid
+sub-to-add-neg @3: valid
+sub-to-add-neg @4: valid
+sub-to-add-neg @5: valid
+sub-to-add-neg @6: valid
+shl-4-zero @1: x = 0x1: lhs = 0x1, rhs = 0x0
+shl-4-zero @2: x = 0x1: lhs = 0x1, rhs = 0x0
+shl-4-zero @3: valid
+shl-4-zero @4: valid
+shl-4-zero @5: x = 0x01: lhs = 0x10, rhs = 0x00
+shl-4-zero @6: x = 0x01: lhs = 0x10, rhs = 0x00
+add-to-or @1: x = 0x1, y = 0x1: lhs = 0x0, rhs = 0x1
+add-to-or @2: x = 0x1, y = 0x1: lhs = 0x2, rhs = 0x1
+add-to-or @3: x = 0x1, y = 0x1: lhs = 0x2, rhs = 0x1
+add-to-or @4: x = 0x1, y = 0x1: lhs = 0x2, rhs = 0x1
+add-to-or @5: x = 0x01, y = 0x01: lhs = 0x02, rhs = 0x01
+add-to-or @6: x = 0x01, y = 0x01: lhs = 0x02, rhs = 0x01
+de-morgan-and @1: valid
+de-morgan-and @2: valid
+de-morgan-and @3: valid
+de-morgan-and @4: valid
+de-morgan-and @5: valid
+de-morgan-and @6: valid
+de-morgan-or @1: valid
+de-morgan-or @2: valid
+de-morgan-or @3: valid
+de-morgan-or @4: valid
+de-morgan-or @5: valid
+de-morgan-or @6: valid
+ult-self @1: valid
+ult-self @2: valid
+ult-self @3: valid
+ult-self @4: valid
+ult-self @5: valid
+ult-self @6: valid
+eq-self @1: valid
+eq-self @2: valid
+eq-self @3: valid
+eq-self @4: valid
+eq-self @5: valid
+eq-self @6: valid
+ult-to-slt @1: x = 0x0, y = 0x1: lhs = true, rhs = false
+ult-to-slt @2: x = 0x0, y = 0x2: lhs = true, rhs = false
+ult-to-slt @3: x = 0x0, y = 0x4: lhs = true, rhs = false
+ult-to-slt @4: x = 0x0, y = 0x8: lhs = true, rhs = false
+ult-to-slt @5: x = 0x00, y = 0x10: lhs = true, rhs = false
+ult-to-slt @6: x = 0x00, y = 0x20: lhs = true, rhs = false
+slt-zero-off-by-one @1: x = 0x8: lhs = true, rhs = false
+slt-zero-off-by-one @2: x = 0x8: lhs = true, rhs = false
+slt-zero-off-by-one @3: x = 0x8: lhs = true, rhs = false
+slt-zero-off-by-one @4: x = 0x8: lhs = true, rhs = false
+slt-zero-off-by-one @5: x = 0x8: lhs = true, rhs = false
+slt-zero-off-by-one @6: x = 0x8: lhs = true, rhs = false
+ite-same @1: valid
+ite-same @2: valid
+ite-same @3: valid
+ite-same @4: valid
+ite-same @5: valid
+ite-same @6: valid
+ite-true @1: valid
+ite-true @2: valid
+ite-true @3: valid
+ite-true @4: valid
+ite-true @5: valid
+ite-true @6: valid
+ite-eq-select @1: valid
+ite-eq-select @2: valid
+ite-eq-select @3: valid
+ite-eq-select @4: valid
+ite-eq-select @5: valid
+ite-eq-select @6: valid
+ite-min-to-max @1: x = 0x0, y = 0x1: lhs = 0x0, rhs = 0x1
+ite-min-to-max @2: x = 0x0, y = 0x1: lhs = 0x0, rhs = 0x1
+ite-min-to-max @3: x = 0x0, y = 0x1: lhs = 0x0, rhs = 0x1
+ite-min-to-max @4: x = 0x0, y = 0x1: lhs = 0x0, rhs = 0x1
+ite-min-to-max @5: x = 0x00, y = 0x01: lhs = 0x00, rhs = 0x01
+ite-min-to-max @6: x = 0x00, y = 0x01: lhs = 0x00, rhs = 0x01
+shl-lshr @1: valid
+shl-lshr @2: valid
+shl-lshr @3: valid
+shl-lshr @4: valid
+shl-lshr @5: valid
+shl-lshr @6: valid
+lshr-small @1: valid
+lshr-small @2: valid
+lshr-small @3: valid
+lshr-small @4: valid
+lshr-small @5: valid
+lshr-small @6: valid
+ult-succ @1: valid
+ult-succ @2: valid
+ult-succ @3: valid
+ult-succ @4: valid
+ult-succ @5: valid
+ult-succ @6: valid
+sub-zero-weak-pre @1: valid
+sub-zero-weak-pre @2: x = 0x0, y = 0x1: lhs = 0x3, rhs = 0x0
+sub-zero-weak-pre @3: x = 0x0, y = 0x1: lhs = 0x7, rhs = 0x0
+sub-zero-weak-pre @4: x = 0x0, y = 0x1: lhs = 0xf, rhs = 0x0
+sub-zero-weak-pre @5: x = 0x00, y = 0x01: lhs = 0x1f, rhs = 0x00
+sub-zero-weak-pre @6: x = 0x00, y = 0x01: lhs = 0x3f, rhs = 0x00

@@ -102,3 +102,59 @@ Test: `-p VerifyBrute.Valid`.
 verdict for every hand-picked rule; the expected strings in
 `test/Lozenge/VerifyBruteSpec.hs` match its output. Run
 `python3 test/ref/brute.py` if you doubt an expected string.
+
+## 5. Shared expression parser (`Lozenge.Parse`)
+
+`Parse.hs` now exports `Parser`, `lexeme`, `identifier`, `constBody` and
+`exprWith`, so RuleParse reuses your expression parser instead of copying it.
+Write them as part of Phase 1 step 4; `parseExpr` becomes a thin wrapper.
+
+- [ ] `exprWith`. *Your form parser reads `(`, an operator word, then
+  operands. Which two places in it change between plain expressions and rule
+  patterns, and why is passing those two as arguments enough?*
+- [ ] `parseExpr`. Tests: all of `-p Parse`. *Given `exprWith`, what is left
+  for `parseExpr` to do?*
+
+## 6. `Lozenge.RuleParse.mkRule`
+
+Tests: `-p "RuleParse.mkRule rejects"`, then `-p RuleParse.accepts`.
+
+- [ ] Widths. *Which `Set` operations tell you "only 0", "exactly one
+  n > 0" and "0 plus something else"? Why is 0 a safe stand-in for `w`?*
+- [ ] Binding. *How do you collect the variables of an `Expr` into a
+  `Set Text`, and which `Set` function gives the ones in the rhs but not in
+  the lhs, already in ascending order?*
+- [ ] Sorts. *Write a function that walks an `Expr` and returns, for each
+  variable occurrence, the sort its position demands. What does it need to
+  know about its parent to tell an `ite` condition from an `ite` branch?*
+- [ ] Types and messages. *`typecheck` gives you a `SomeExpr`. Which Phase 2
+  helper turns its `SingTy` back into a `Ty`, and how do you print `BV w`
+  instead of `BV 64` for a generic rule?*
+
+## 7. `Lozenge.RuleParse.parseRules`
+
+Tests: `-p RuleParse`, then read `test/golden/rule-errors.txt`. That file is
+written on the first passing run and does not exist yet. Read every message:
+*would a newcomer understand it?*
+
+- [ ] Rule-level tokens. *`rule`, `=>`, `:if` and the parentheses use
+  `Lozenge.Parse.lexeme`, but between rules you also skip comments. Which
+  `Text.Megaparsec.Char.Lexer` function builds a space consumer that skips
+  `;` comments?*
+- [ ] `?x`. *Why must `?` and the identifier be adjacent, and which parser
+  combinators make `? x` fail?*
+- [ ] The placeholder. *How do you parse the word `w` so that `wx` is
+  rejected, and then try `constBody` when it isn't `w`?*
+- [ ] Reporting `mkRule` errors. *A `Left msg` from `mkRule` must point at
+  the rule's `(`. Which megaparsec functions read the current offset before
+  you parse the rule, and fail at a saved offset afterwards?*
+- [ ] Duplicates. *Can you check names while you parse, or only after? Which
+  one lets the error point at the second rule?*
+
+## 8. The corpus
+
+Test: `-p Corpus`. `test/golden/corpus-verdicts.txt` was written by
+`test/ref/corpus.py`, not by your code. If the golden test fails, look at the
+first differing line: *which is wrong, your `verifyBrute`, `instantiate`,
+`mkRule`'s sort inference, or the Python? Check by hand at that width.* Do not
+run `--accept` until you know.

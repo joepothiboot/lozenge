@@ -1,4 +1,4 @@
-module Lozenge.Rules (
+module Lozenge.Rule (
   Rule (..),
   RuleWidth (..),
   instantiate,
