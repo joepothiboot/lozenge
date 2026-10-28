@@ -9,3 +9,8 @@
 - State: working tree clean at 69340a5 with no other branch, stash or worktree, and open editors match disk; all 8 stubs (P1 and P2) are still `error "TODO"`.
 - Tests: 316/320 fail, all from the TODO stubs; build is -Werror clean; z3 found; Haddock is 0% on every module, P2 included.
 - Next: finish P1 validValue and eval (3 of the 4 P2 properties compare against eval), save the P2 work to disk, then re-run REVIEW on the uncommitted diff.
+
+## 2026-10-28 REVIEW p3 (no implementation found)
+- State: working tree clean at aed066d (not pushed); verifyBrute, renderVerdict and instantiate are still `error "TODO"`, and so are all P1/P2 stubs.
+- Build: broken. src/Lozenge/Rule.hs declares `module Lozenge.Rules`, but the file and lozenge.cabal say `Lozenge.Rule`. Haddock was also removed from Rule.hs and VerifyBrute.hs, which were the P3 spec (docs/TODO-p3.md points to it) and which the CI docs job needs at 100%.
+- Next: fix the module name and restore the Haddock, then implement; re-run REVIEW on the uncommitted diff.
