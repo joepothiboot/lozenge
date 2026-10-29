@@ -13,6 +13,7 @@ library
   import:           warnings
   hs-source-dirs:   src
   exposed-modules:
+    Lozenge.Critical
     Lozenge.Eval
     Lozenge.EvalT
     Lozenge.Expr
@@ -57,6 +58,7 @@ test-suite spec
     ExprGen
     Golden
     Lozenge.CorpusSpec
+    Lozenge.CriticalSpec
     Lozenge.EdgeSpec
     Lozenge.EvalSpec
     Lozenge.EvalTSpec

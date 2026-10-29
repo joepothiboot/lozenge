@@ -4,6 +4,7 @@ module Main (main) where
 
 import Golden (goldenText)
 import Lozenge.CorpusSpec qualified as CorpusSpec
+import Lozenge.CriticalSpec qualified as CriticalSpec
 import Lozenge.EdgeSpec qualified as EdgeSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.EvalTSpec qualified as EvalTSpec
@@ -51,6 +52,7 @@ main =
         SymExecSpec.tests,
         ExprFSpec.tests,
         RewriteSpec.tests,
+        CriticalSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

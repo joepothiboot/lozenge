@@ -1,0 +1,29 @@
+f-g / g-b at [0]
+  peak:  (not (neg b))
+  left:  a
+  right: (not c)
+  not joined: normal forms a and (not c); not checked: a is not in cpVars
+
+not-not / not-not at [0]
+  peak:  (not (not (not ?x_1)))
+  left:  (not ?x_1)
+  right: (not ?x_1)
+  joinable: (not ?x_1)
+
+not-not / de-morgan-and at [0]
+  peak:  (not (not (and ?x_1 ?y_2)))
+  left:  (and ?x_1 ?y_2)
+  right: (not (or (not ?x_1) (not ?y_2)))
+  not joined: normal forms (and ?x_1 ?y_2) and (not (or (not ?x_1) (not ?y_2))); syntactically different, semantically equal
+
+xor-self / xor-left at []
+  peak:  (xor ?x_0 ?x_0)
+  left:  (const 8 0)
+  right: ?x_0
+  not joined: normal forms (const 8 0) and ?x_0; UNSOUND: x_0 = 0x01: lhs = 0x00, rhs = 0x01
+
+comm / add-zero at []
+  peak:  (add ?x_0 (const 8 0))
+  left:  (add (const 8 0) ?x_0)
+  right: ?x_0
+  not joined: no normal form within the budget; syntactically different, semantically equal

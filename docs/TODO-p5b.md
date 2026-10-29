@@ -17,7 +17,8 @@ tests build their rules as `FixRule`s by hand, so nothing here waits on
 - **Preconditions are ignored in this phase.** `rewriteOnce` and `normalise`
   skip every rule that has one, so they never rewrite with a rule they can't
   check. `normalise` returns the names of the skipped rules, so its type is
-  `([Text], NormalForm)`, not `NormalForm`. Phase 5c handles preconditions.
+  `([Text], NormalForm)`, not `NormalForm`. Phase 5c skips them too; no phase
+  handles conditional rules yet.
 - **`NormalForm` has three constructors:** `Done`, `Cycle k ts` and
   `OutOfFuel ts`. A cycle is a repeat of *any* earlier term, not just the
   input. The repeat check comes before the fuel check, and `Done` wins when
