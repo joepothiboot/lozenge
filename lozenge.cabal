@@ -21,6 +21,7 @@ library
     Lozenge.Rule
     Lozenge.RuleParse
     Lozenge.Smt
+    Lozenge.SymExec
     Lozenge.Solver
     Lozenge.Typecheck
     Lozenge.Typed
@@ -62,6 +63,7 @@ test-suite spec
     Lozenge.RuleParseSpec
     Lozenge.RuleSpec
     Lozenge.SmtSpec
+    Lozenge.SymExecSpec
     Lozenge.SolverSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
