@@ -15,12 +15,12 @@ import Data.Text (Text)
 data Value
   = VBool Bool
   | VBV Int Integer
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data UnOp
   = Not
   | Neg
-  deriving (Eq, Show, Enum, Bounded)
+  deriving (Eq, Ord, Show, Enum, Bounded)
 
 data BinOp
   = Add
@@ -31,13 +31,13 @@ data BinOp
   | Xor
   | Shl
   | Lshr
-  deriving (Eq, Show, Enum, Bounded)
+  deriving (Eq, Ord, Show, Enum, Bounded)
 
 data CmpOp
   = Eq
   | Ult
   | Slt
-  deriving (Eq, Show, Enum, Bounded)
+  deriving (Eq, Ord, Show, Enum, Bounded)
 
 data Expr
   = Var Text

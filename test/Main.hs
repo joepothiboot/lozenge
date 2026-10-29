@@ -7,6 +7,7 @@ import Lozenge.CorpusSpec qualified as CorpusSpec
 import Lozenge.EdgeSpec qualified as EdgeSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.EvalTSpec qualified as EvalTSpec
+import Lozenge.ExprFSpec qualified as ExprFSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.ParseSpec qualified as ParseSpec
 import Lozenge.PrettySpec qualified as PrettySpec
@@ -47,6 +48,7 @@ main =
         SolverSpec.tests,
         VerifySmtSpec.tests,
         SymExecSpec.tests,
+        ExprFSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
