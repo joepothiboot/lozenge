@@ -14,3 +14,10 @@
 - State: working tree clean at aed066d (not pushed); verifyBrute, renderVerdict and instantiate are still `error "TODO"`, and so are all P1/P2 stubs.
 - Build: broken. src/Lozenge/Rule.hs declares `module Lozenge.Rules`, but the file and lozenge.cabal say `Lozenge.Rule`. Haddock was also removed from Rule.hs and VerifyBrute.hs, which were the P3 spec (docs/TODO-p3.md points to it) and which the CI docs job needs at 100%.
 - Next: fix the module name and restore the Haddock, then implement; re-run REVIEW on the uncommitted diff.
+
+## 2026-10-29 REVIEW p5 (no implementation found)
+- State: working tree clean at 19eb903 with no other branch, stash or worktree. All 19 Phase 5 functions (Fix 3, ExprF 6, Rewrite 5, Critical 5) are still `error "TODO"`. The commits stripped every comment from the four Phase 5 modules: Haddock (the spec the TODO files point to), the `-- shortcut:` comments and the pragma justifications.
+- Tests: 599/630 fail, all from the TODO stubs (ExprF 31/37, Rewrite 42/42, Critical 21/21); z3 found. `stack build --ghc-options=-Werror` fails: the committed test/Lozenge/CriticalSpec.hs is a mid-session snapshot (unused `counterexample` import, defaulted type in `genRules`), so CI's build job will fail.
+- Mutation: not run, because there is no occurs check to mutate. By inspection, dropping it fails "occurs check", "occurs check through another variable" and the unify soundness property.
+- Test gaps found: no lhs or generated rule has `ite` or a comparison, so a position walk that skips IteF/CmpF children passes every critical-pair test. No normalise test has two distinct terms of the same shape in a row, so a cycle check on a weaker equality could slip past.
+- Next: restore the Haddock and comments, fix the two CriticalSpec warnings, then implement 5a step 1 (cata) and re-run REVIEW on the uncommitted diff.
