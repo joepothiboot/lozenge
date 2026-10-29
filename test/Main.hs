@@ -5,6 +5,7 @@ module Main (main) where
 import Golden (goldenText)
 import Lozenge.CorpusSpec qualified as CorpusSpec
 import Lozenge.CriticalSpec qualified as CriticalSpec
+import Lozenge.EGraphSpec qualified as EGraphSpec
 import Lozenge.EdgeSpec qualified as EdgeSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.EvalTSpec qualified as EvalTSpec
@@ -55,6 +56,7 @@ main =
         RewriteSpec.tests,
         CriticalSpec.tests,
         UnionFindSpec.tests,
+        EGraphSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
