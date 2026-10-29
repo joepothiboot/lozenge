@@ -21,6 +21,7 @@ library
     Lozenge.Parse
     Lozenge.Pretty
     Lozenge.Rule
+    Lozenge.Rewrite
     Lozenge.RuleParse
     Lozenge.Smt
     Lozenge.SymExec
@@ -63,6 +64,7 @@ test-suite spec
     Lozenge.ExprSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
+    Lozenge.RewriteSpec
     Lozenge.RuleParseSpec
     Lozenge.RuleSpec
     Lozenge.SmtSpec

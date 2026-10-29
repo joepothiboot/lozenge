@@ -11,6 +11,7 @@ import Lozenge.ExprFSpec qualified as ExprFSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.ParseSpec qualified as ParseSpec
 import Lozenge.PrettySpec qualified as PrettySpec
+import Lozenge.RewriteSpec qualified as RewriteSpec
 import Lozenge.RuleParseSpec qualified as RuleParseSpec
 import Lozenge.RuleSpec qualified as RuleSpec
 import Lozenge.SmtSpec qualified as SmtSpec
@@ -49,6 +50,7 @@ main =
         VerifySmtSpec.tests,
         SymExecSpec.tests,
         ExprFSpec.tests,
+        RewriteSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
