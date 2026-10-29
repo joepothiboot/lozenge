@@ -16,6 +16,7 @@ import Lozenge.PrettySpec qualified as PrettySpec
 import Lozenge.RewriteSpec qualified as RewriteSpec
 import Lozenge.RuleParseSpec qualified as RuleParseSpec
 import Lozenge.RuleSpec qualified as RuleSpec
+import Lozenge.SaturateSpec qualified as SaturateSpec
 import Lozenge.SmtSpec qualified as SmtSpec
 import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.SymExecSpec qualified as SymExecSpec
@@ -57,6 +58,7 @@ main =
         CriticalSpec.tests,
         UnionFindSpec.tests,
         EGraphSpec.tests,
+        SaturateSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

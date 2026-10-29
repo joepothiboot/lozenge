@@ -7,7 +7,7 @@ import Control.Monad (foldM, forM, replicateM, unless)
 import Control.Monad.ST (ST, runST)
 import Data.Foldable (toList)
 import Data.Functor (void)
-import Data.List (nub, partition)
+import Data.List (nub, partition, sortOn)
 import Data.Text (Text)
 import Lozenge.EGraph
 import Lozenge.Expr (BinOp (..), UnOp (..), Value (..))
@@ -62,6 +62,30 @@ tests =
             withGraph (\g -> do (x, y, _, _) <- abfafb g; merge g x y; rebuild g; checkInvariants g) @?= []
         ],
       testGroup
+        "classes"
+        [ testCase "each class once, by ascending id, with its nodes" $
+            withGraph
+              ( \g -> do
+                  s <- addTerm g (add a a)
+                  x <- addTerm g a
+                  cs <- classes g
+                  pure (cs == sortOn fst [(x, [VarF "a"]), (s, [BinF Add x x])])
+              )
+              @?= True,
+          testCase "after merge a b and rebuild: one class with a and b, and f(a), f(b) as one node" $
+            withGraph
+              ( \g -> do
+                  (x, y, _, _) <- abfafb g
+                  merge g x y
+                  rebuild g
+                  r <- addTerm g a
+                  fr <- addTerm g (f a)
+                  cs <- classes g
+                  pure (cs == sortOn fst [(r, [VarF "a", VarF "b"]), (fr, [UnF Neg r])])
+              )
+              @?= True
+        ],
+      testGroup
         "congruence closure"
         [ testCase "f(f(f(a))) = a and f(f(a)) = a imply f(a) = a" $
             withGraph
@@ -99,9 +123,9 @@ tests =
               forAllShrinkShow genOps shrinkOps show $ \ops ->
                 let (checks, _) = runProgram ops
                  in conjoin [counterexample ("rebuild number " <> show i) (vs === []) | (i, vs) <- zip [1 :: Int ..] checks],
-          props $
-            testProperty "equiv agrees with a naive congruence closure" $
-              forAllShrinkShow genOps shrinkOps show (checkCoverage . agrees)
+          props
+            $ testProperty "equiv agrees with a naive congruence closure"
+            $ forAllShrinkShow genOps shrinkOps show (checkCoverage . agrees)
         ]
     ]
 

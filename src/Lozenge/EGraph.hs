@@ -7,6 +7,7 @@ module Lozenge.EGraph (
   merge,
   rebuild,
   equiv,
+  classes,
   checkInvariants,
 )
 where
@@ -37,6 +38,9 @@ rebuild = error "TODO: rebuild"
 
 equiv :: EGraph s -> ClassId -> ClassId -> ST s Bool
 equiv = error "TODO: equiv"
+
+classes :: EGraph s -> ST s [(ClassId, [ExprF ClassId])]
+classes = error "TODO: classes"
 
 checkInvariants :: EGraph s -> ST s [Text]
 checkInvariants = error "TODO: checkInvariants"

@@ -15,16 +15,19 @@ library
   exposed-modules:
     Lozenge.Critical
     Lozenge.EGraph
+    Lozenge.EMatch
     Lozenge.Eval
     Lozenge.EvalT
     Lozenge.Expr
     Lozenge.ExprF
+    Lozenge.Extract
     Lozenge.Fix
     Lozenge.Parse
     Lozenge.Pretty
     Lozenge.Rule
     Lozenge.Rewrite
     Lozenge.RuleParse
+    Lozenge.Saturate
     Lozenge.Smt
     Lozenge.SymExec
     Lozenge.Solver
@@ -73,6 +76,7 @@ test-suite spec
     Lozenge.RewriteSpec
     Lozenge.RuleParseSpec
     Lozenge.RuleSpec
+    Lozenge.SaturateSpec
     Lozenge.SmtSpec
     Lozenge.SymExecSpec
     Lozenge.SolverSpec
