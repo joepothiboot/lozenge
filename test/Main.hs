@@ -20,6 +20,7 @@ import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.SymExecSpec qualified as SymExecSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
+import Lozenge.UnionFindSpec qualified as UnionFindSpec
 import Lozenge.VerifyBruteSpec qualified as VerifyBruteSpec
 import Lozenge.VerifySmtSpec qualified as VerifySmtSpec
 import Props (props)
@@ -53,6 +54,7 @@ main =
         ExprFSpec.tests,
         RewriteSpec.tests,
         CriticalSpec.tests,
+        UnionFindSpec.tests,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),

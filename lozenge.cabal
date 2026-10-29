@@ -29,9 +29,11 @@ library
     Lozenge.Solver
     Lozenge.Typecheck
     Lozenge.Typed
+    Lozenge.UnionFind
     Lozenge.VerifyBrute
     Lozenge.VerifySmt
   build-depends:
+    , array
     , base
     , containers
     , directory
@@ -74,6 +76,7 @@ test-suite spec
     Lozenge.SolverSpec
     Lozenge.TypecheckSpec
     Lozenge.TypedSpec
+    Lozenge.UnionFindSpec
     Lozenge.VerifyBruteSpec
     Lozenge.VerifySmtSpec
     Props
@@ -88,6 +91,7 @@ test-suite spec
     , megaparsec
     , mtl
     , process
+    , QuickCheck
     , tasty
     , tasty-golden
     , tasty-hunit
