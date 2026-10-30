@@ -55,6 +55,19 @@ executable lozenge
   build-depends:    base
   default-language: GHC2021
 
+executable lozenge-demo
+  import:           warnings
+  hs-source-dirs:   app
+  main-is:          Demo.hs
+  build-depends:
+    , base
+    , lozenge
+    , megaparsec
+    , QuickCheck
+    , tasty-bench
+    , text
+  default-language: GHC2021
+
 test-suite spec
   import:           warnings
   type:             exitcode-stdio-1.0
