@@ -21,3 +21,10 @@
 - Mutation: not run, because there is no occurs check to mutate. By inspection, dropping it fails "occurs check", "occurs check through another variable" and the unify soundness property.
 - Test gaps found: no lhs or generated rule has `ite` or a comparison, so a position walk that skips IteF/CmpF children passes every critical-pair test. No normalise test has two distinct terms of the same shape in a row, so a cycle check on a weaker equality could slip past.
 - Next: restore the Haddock and comments, fix the two CriticalSpec warnings, then implement 5a step 1 (cata) and re-run REVIEW on the uncommitted diff.
+
+## 2026-10-30 REVIEW p6 (no implementation found)
+- State: working tree clean at 25bffd4 with no other branch or stash. All 20 Phase 6 functions (UnionFind 5, EGraph 8, EMatch 1, Extract 3, Saturate 3) are still `error "TODO"`. The 6a–6c commits stripped every comment from the five Phase 6 modules: the Haddock (the spec the TODO files point to), the representation notes and the `-- shortcut:` comments.
+- Tests: 665/697 fail, all from TODO stubs (UnionFind 13/14, EGraph 21/21, Saturate 32/32; the UnionFind pass checks the model against a built-in buggy union-find, so it passes by design). `-Werror` build clean.
+- Asked to check: laziness leaks, `rebuild` termination, extraction of a class that contains itself. There's no code to check yet, so these became rung-1 questions to take into the implementation.
+- Test gaps found: no tasty timeout, so a looping `rebuild` or `extract` hangs the suite instead of failing it; extraction is tested on a one-class cycle but not on a cycle through two classes (merge `a` with `f(f(a))`); no test can detect a space leak (`+RTS -s` is the tool).
+- Next: restore the Phase 6 Haddock, implement 6a, then run `+RTS -s` on `-p /UnionFind/` and `-p /EGraph/` and compare with a baseline taken now.
