@@ -13,6 +13,7 @@ library
   import:           warnings
   hs-source-dirs:   src
   exposed-modules:
+    Lozenge.Cli
     Lozenge.Critical
     Lozenge.EGraph
     Lozenge.EMatch
@@ -22,6 +23,7 @@ library
     Lozenge.ExprF
     Lozenge.Extract
     Lozenge.Fix
+    Lozenge.Json
     Lozenge.Parse
     Lozenge.Pretty
     Lozenge.Rule
@@ -37,6 +39,7 @@ library
     Lozenge.VerifyBrute
     Lozenge.VerifySmt
   build-depends:
+    , aeson
     , array
     , base
     , containers
@@ -52,7 +55,11 @@ executable lozenge
   import:           warnings
   hs-source-dirs:   app
   main-is:          Main.hs
-  build-depends:    base
+  build-depends:
+    , base
+    , lozenge
+    , optparse-applicative
+    , text
   default-language: GHC2021
 
 executable lozenge-demo
@@ -76,6 +83,7 @@ test-suite spec
   other-modules:
     ExprGen
     Golden
+    Lozenge.CliSpec
     Lozenge.CorpusSpec
     Lozenge.CriticalSpec
     Lozenge.EGraphSpec
@@ -102,6 +110,7 @@ test-suite spec
     TExprGen
     Z3
   build-depends:
+    , aeson
     , base
     , bytestring
     , containers

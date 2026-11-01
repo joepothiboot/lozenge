@@ -1,12 +1,12 @@
-module Lozenge.Expr
-  ( Value (..),
-    UnOp (..),
-    BinOp (..),
-    CmpOp (..),
-    Expr (..),
-    Env,
-    validValue,
-  )
+module Lozenge.Expr (
+  Value (..),
+  UnOp (..),
+  BinOp (..),
+  CmpOp (..),
+  Expr (..),
+  Env,
+  validValue,
+)
 where
 
 import Data.Map.Strict (Map)

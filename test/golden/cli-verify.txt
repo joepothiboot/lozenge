@@ -1,0 +1,31 @@
+add-zero [brute]: valid
+mul-one [brute]: valid
+mul-zero [brute]: valid
+xor-self [brute]: valid
+sub-self [brute]: valid
+and-ones [brute]: valid
+not-not [brute]: valid
+neg-neg [brute]: valid
+sub-comm [brute]: x = 0x00, y = 0x01: lhs = 0x3f, rhs = 0x01
+not-to-neg [brute]: x = 0x00: lhs = 0x3f, rhs = 0x00
+mul-2-to-shl [brute]: valid
+add-self-to-shl [brute]: valid
+neg-to-not-add [brute]: valid
+sub-to-add-neg [brute]: valid
+shl-4-zero [brute]: x = 0x01: lhs = 0x10, rhs = 0x00
+add-to-or [brute]: x = 0x01, y = 0x01: lhs = 0x02, rhs = 0x01
+de-morgan-and [brute]: valid
+de-morgan-or [brute]: valid
+ult-self [brute]: valid
+eq-self [brute]: valid
+ult-to-slt [brute]: x = 0x00, y = 0x20: lhs = true, rhs = false
+slt-zero-off-by-one [brute]: x = 0x8: lhs = true, rhs = false
+ite-same [brute]: valid
+ite-true [brute]: valid
+ite-eq-select [brute]: valid
+ite-min-to-max [brute]: x = 0x00, y = 0x01: lhs = 0x00, rhs = 0x01
+shl-lshr [brute]: valid
+lshr-small [brute]: valid
+ult-succ [brute]: valid
+sub-zero-weak-pre [brute]: x = 0x00, y = 0x01: lhs = 0x3f, rhs = 0x00
+22 valid, 8 invalid, 0 unsupported at width 6

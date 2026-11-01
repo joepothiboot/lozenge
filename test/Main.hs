@@ -2,7 +2,9 @@
 
 module Main (main) where
 
+import Data.Maybe (isJust)
 import Golden (goldenText)
+import Lozenge.CliSpec qualified as CliSpec
 import Lozenge.CorpusSpec qualified as CorpusSpec
 import Lozenge.CriticalSpec qualified as CriticalSpec
 import Lozenge.EGraphSpec qualified as EGraphSpec
@@ -26,6 +28,7 @@ import Lozenge.UnionFindSpec qualified as UnionFindSpec
 import Lozenge.VerifyBruteSpec qualified as VerifyBruteSpec
 import Lozenge.VerifySmtSpec qualified as VerifySmtSpec
 import Props (props)
+import System.Directory (findExecutable)
 import System.Process (readProcess)
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=))
@@ -33,7 +36,8 @@ import Test.Tasty.QuickCheck (testProperty)
 import Z3 (requireZ3)
 
 main :: IO ()
-main =
+main = do
+  z3 <- isJust <$> findExecutable "z3"
   defaultMain $
     testGroup
       "lozenge"
@@ -59,6 +63,7 @@ main =
         UnionFindSpec.tests,
         EGraphSpec.tests,
         SaturateSpec.tests,
+        CliSpec.tests z3,
         testGroup
           "harness"
           [ testCase "hunit" (1 + 1 @?= (2 :: Int)),
