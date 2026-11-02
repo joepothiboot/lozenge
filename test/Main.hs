@@ -22,6 +22,7 @@ import Lozenge.SaturateSpec qualified as SaturateSpec
 import Lozenge.SmtSpec qualified as SmtSpec
 import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.SymExecSpec qualified as SymExecSpec
+import Lozenge.TensorSpec qualified as TensorSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
 import Lozenge.UnionFindSpec qualified as UnionFindSpec
@@ -63,6 +64,7 @@ main = do
         UnionFindSpec.tests,
         EGraphSpec.tests,
         SaturateSpec.tests,
+        TensorSpec.tests,
         CliSpec.tests z3,
         testGroup
           "harness"
