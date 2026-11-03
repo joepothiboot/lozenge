@@ -15,7 +15,9 @@ import Lozenge.EvalTSpec qualified as EvalTSpec
 import Lozenge.ExprFSpec qualified as ExprFSpec
 import Lozenge.ExprSpec qualified as ExprSpec
 import Lozenge.FusionSpec qualified as FusionSpec
+import Lozenge.GradSpec qualified as GradSpec
 import Lozenge.GraphSpec qualified as GraphSpec
+import Lozenge.MlpSpec qualified as MlpSpec
 import Lozenge.ParseSpec qualified as ParseSpec
 import Lozenge.PrettySpec qualified as PrettySpec
 import Lozenge.RewriteSpec qualified as RewriteSpec
@@ -74,6 +76,8 @@ main = do
         FusionSpec.tests,
         TensorOptSpec.tests,
         EmitCSpec.tests cc,
+        GradSpec.tests,
+        MlpSpec.tests,
         CliSpec.tests z3,
         testGroup
           "harness"

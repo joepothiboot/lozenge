@@ -59,6 +59,7 @@ tests =
         "localCost"
         [ testCase "input" $ localCost (Input "x" [2, 3]) @?= Costed 0 [2, 3],
           testCase "add is the children plus 1" $ localCost (Add (Costed 5 [2, 3]) (Costed 7 [2, 3])) @?= Costed 13 [2, 3],
+          testCase "relu is the child plus 1" $ localCost (Relu (Costed 2 [2, 3])) @?= Costed 3 [2, 3],
           testCase "reshape" $ localCost (Reshape [6] (Costed 3 [2, 3])) @?= Costed 4 [6],
           testCase "matmul" $ localCost (MatMul (Costed 0 [2, 3]) (Costed 0 [3, 4])) @?= Costed (kernelWeight + 6 + 12 + 8) [2, 4],
           testCase "transpose" $ localCost (Transpose (Costed 1 [2, 3])) @?= Costed (1 + kernelWeight + 12) [3, 2],

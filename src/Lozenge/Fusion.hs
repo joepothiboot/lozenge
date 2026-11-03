@@ -23,6 +23,7 @@ data Ew
   = Load Buf
   | EwAdd Ew Ew
   | EwMul Ew Ew
+  | EwRelu Ew
   deriving (Eq, Show)
 
 data Kernel

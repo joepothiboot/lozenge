@@ -55,6 +55,7 @@ data Tensor (s :: [Nat]) :: Type where
   Var :: (KnownShape s) => Text -> Tensor s
   Add :: Tensor s -> Tensor s -> Tensor s
   Mul :: Tensor s -> Tensor s -> Tensor s
+  Relu :: Tensor s -> Tensor s
   MatMul ::
     (KnownNat m, KnownNat k, KnownNat n) =>
     Tensor '[m, k] ->

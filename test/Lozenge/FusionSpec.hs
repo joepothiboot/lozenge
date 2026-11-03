@@ -19,6 +19,9 @@ tests =
         [ testCase "a chain of adds and muls is one kernel" $
             fuse (build [inA, inB, Mul 0 1, Add 0 2]) 3
               @?= Right (Program [("a", 6), ("b", 6)] [Elementwise 6 (EwAdd (ld (InBuf 0)) (EwMul (ld (InBuf 0)) (ld (InBuf 1))))] (TmpBuf 0)),
+          testCase "relu joins a chain" $
+            fuse (build [inA, inB, Add 0 1, Relu 2, Mul 3 0]) 4
+              @?= Right (Program [("a", 6), ("b", 6)] [Elementwise 6 (EwMul (EwRelu (EwAdd (ld (InBuf 0)) (ld (InBuf 1)))) (ld (InBuf 0)))] (TmpBuf 0)),
           testCase "a node used twice is materialised" $
             fuse (build [inA, inB, Add 0 1, Mul 2 2]) 3
               @?= Right

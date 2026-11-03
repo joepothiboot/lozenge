@@ -25,8 +25,10 @@ library
     Lozenge.Extract
     Lozenge.Fix
     Lozenge.Fusion
+    Lozenge.Grad
     Lozenge.Graph
     Lozenge.Json
+    Lozenge.Mlp
     Lozenge.Parse
     Lozenge.Pretty
     Lozenge.Rule
@@ -81,6 +83,17 @@ executable lozenge-demo
     , text
   default-language: GHC2021
 
+executable lozenge-train
+  import:           warnings
+  hs-source-dirs:   app
+  main-is:          Train.hs
+  build-depends:
+    , base
+    , directory
+    , lozenge
+    , text
+  default-language: GHC2021
+
 test-suite spec
   import:           warnings
   type:             exitcode-stdio-1.0
@@ -101,7 +114,9 @@ test-suite spec
     Lozenge.ExprFSpec
     Lozenge.ExprSpec
     Lozenge.FusionSpec
+    Lozenge.GradSpec
     Lozenge.GraphSpec
+    Lozenge.MlpSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
     Lozenge.RewriteSpec

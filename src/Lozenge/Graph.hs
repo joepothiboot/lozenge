@@ -24,6 +24,7 @@ data Op a
   = Input Text Shape
   | Add a a
   | Mul a a
+  | Relu a
   | MatMul a a
   | Transpose a
   | Reshape Shape a

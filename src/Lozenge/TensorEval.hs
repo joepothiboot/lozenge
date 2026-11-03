@@ -16,5 +16,5 @@ data InputError
   | WrongLength Text Int Int
   deriving (Eq, Show)
 
-evalTensor :: (Num a) => Inputs a -> Tensor s -> Either InputError [a]
+evalTensor :: (Ord a, Num a) => Inputs a -> Tensor s -> Either InputError [a]
 evalTensor = error "TODO: evalTensor"

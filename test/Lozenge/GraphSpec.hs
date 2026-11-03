@@ -35,6 +35,7 @@ tests =
           Input "s" [] ==> [],
           Add [2, 3] [2, 3] ==> [2, 3],
           Mul [4] [4] ==> [4],
+          Relu [2, 3] ==> [2, 3],
           MatMul [2, 3] [3, 4] ==> [2, 4],
           Transpose [2, 3] ==> [3, 2],
           Reshape [6] [2, 3] ==> [6],
@@ -78,6 +79,7 @@ tests =
           testCase "a common subexpression is one node" $
             lowered (T.Mul (T.Add a b) (T.Add a b)) @?= ([(0, inA), (1, inB), (2, Add 0 1), (3, Mul 2 2)], 3),
           testCase "reshape keeps its target" $ lowered (T.Reshape @'[6] a) @?= ([(0, inA), (1, Reshape [6] 0)], 1),
+          testCase "relu" $ lowered (T.Relu a) @?= ([(0, inA), (1, Relu 0)], 1),
           testCase "transpose" $ lowered (T.Transpose a) @?= ([(0, inA), (1, Transpose 0)], 1),
           testCase "concat keeps its axis" $
             lowered (T.Concat (natSing @1) a b :: Tensor '[2, 6]) @?= ([(0, inA), (1, inB), (2, Concat 1 0 1)], 2),

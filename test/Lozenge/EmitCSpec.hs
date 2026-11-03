@@ -35,9 +35,9 @@ tests cc =
           refused "negative sizes" (Program [("a", 6)] [TransposeK (InBuf 0) (-2) (-3)] (TmpBuf 0)),
           refused "no such output" (Program [("a", 6)] [] (TmpBuf 0))
         ],
-      testCase "input names never reach the C source" $
-        assertBool "the name appears" $
-          either (const False) (not . T.isInfixOf "evil") (emitC (Program [("evil */ name", 1)] [] (InBuf 0))),
+      testCase "input names never reach the C source"
+        $ assertBool "the name appears"
+        $ either (const False) (not . T.isInfixOf "evil") (emitC (Program [("evil */ name", 1)] [] (InBuf 0))),
       if cc then runs else requireExe "cc" "compiled C" (pure "")
     ]
   where
@@ -57,6 +57,8 @@ runs =
           run "an empty slice" (Program [("a", 6)] [SliceK in0 2 3 3 0] (TmpBuf 0)) [a] [],
           run "no kernels: the output is an input" (Program [("a", 6), ("b", 6)] [] in1) [a, b] b,
           run "every kernel kind, chained" allKinds [a, c] [30, 132, 20, 30],
+          run "relu" (Program [("r", 3)] [Elementwise 3 (EwRelu (Load in0))] (TmpBuf 0)) [r] [0, 0, 2.5],
+          run "relu inside a chain" (Program [("r", 3), ("s", 3)] [Elementwise 3 (EwAdd (EwRelu (Load in0)) (EwRelu (EwMul (Load in0) (Load in1))))] (TmpBuf 0)) [r, [-2, 3, 1]] [3, 0, 5],
           run "doubles round-trip exactly" (Program [("p", 1), ("q", 1)] [Elementwise 1 (EwAdd (Load in0) (Load in1))] (TmpBuf 0)) [[0.1], [0.2]] [0.1 + 0.2]
         ],
       localOption (QuickCheckTests 50) $
@@ -99,7 +101,8 @@ allKinds =
     ]
     (TmpBuf 4)
 
-a, b, c :: [Double]
+a, b, c, r :: [Double]
 a = [1 .. 6]
 b = [10, 20 .. 60]
 c = [1, 0, 0, 1, 1, 1]
+r = [-1.5, 0, 2.5]

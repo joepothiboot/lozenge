@@ -24,6 +24,8 @@
 | | `Lozenge.Fusion` | elementwise chains into kernels; kernel count + traffic cost |
 | | `Lozenge.TensorOpt` | tensor rules and extraction on the generic e-graph |
 | | `Lozenge.EmitC` | checked C code for a fused program |
+| | `Lozenge.Grad` | reverse-mode AD: gradient of a `Tensor` program's summed output |
+| | `Lozenge.Mlp` | the demo: 2-layer ReLU MLP, gradient descent, loss CSV and SVG (`app/Train.hs`) |
 | CLI | `Lozenge.Cli`, `Lozenge.Json` | the three commands; the JSON schema types |
 | | `app/Main.hs` | argument parsing only (optparse-applicative) |
 

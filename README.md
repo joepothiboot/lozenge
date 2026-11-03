@@ -37,7 +37,44 @@ $ lozenge optimize examples/strength.ir --rules rules/bitvector.rules --engine e
 (pending)
 ```
 
-## Install and run
+## Training demo: a small MLP
+
+lozenge also has a tensor IR with shapes in the types (`Tensor '[m, k]`),
+reverse-mode automatic differentiation over it (`Lozenge.Grad`), and a
+2-layer ReLU network written as a tensor program (`Lozenge.Mlp`).
+`lozenge-train` trains the network by gradient descent, first on XOR (4
+points), then on two moons (200 generated points). It writes each loss curve
+to `docs/demo/*-loss.csv` and plots it as `docs/demo/*-loss.svg`.
+
+> **Pending.** `grad` and the tensor evaluator are still being written (see
+> [docs/TODO-p9.md](docs/TODO-p9.md)), so `lozenge-train` stops at
+> `TODO: evalTensor`. Once they pass their tests, run
+> `stack run lozenge-train`, commit `docs/demo/`, and put the two plots and
+> the printed lines here.
+
+### Not competitive with real frameworks
+
+This demo shows how the pieces fit together. It is not built for speed or
+scale, and PyTorch or JAX beat it on every point below:
+
+- **Tensors are Haskell lists of `Double`**, with no unboxed arrays, BLAS,
+  SIMD or GPU. Training runs in the interpreter. The C backend
+  (`Lozenge.EmitC`) compiles only the forward program, not the training
+  loop.
+- **`grad` recomputes forward values**, with no tape, so its cost grows with
+  the depth of the program, not just its size.
+- **The IR is minimal.** It has no subtraction, broadcasting, constants,
+  reductions, `exp` or `log`. So the targets come in negated, a bias is
+  added as `ones × b`, the loss is mean squared error rather than
+  cross-entropy, and the only nonlinearity is ReLU.
+- **Shapes are fixed at compile time**, so the batch size is part of the
+  program's type, and there is no mini-batching.
+- **Training is plain full-batch gradient descent** at a fixed rate, with no
+  momentum, Adam, schedules or regularisation. The random numbers come from
+  a linear congruential generator.
+- **The datasets are tiny**, and both are generated in code (XOR and two
+  moons).
+
 
 You need [Stack](https://docs.haskellstack.org/). Install
 [z3](https://github.com/Z3Prover/z3) as well for `--solver smt|both` and
@@ -51,6 +88,7 @@ stack exec -- lozenge optimize EXPR.ir --rules RULES.rules [--width N] [--cost s
 stack exec -- lozenge critical-pairs RULES.rules [--width N] [--json]
 scripts/demo.sh                                       # the demo above, step by step
 stack run lozenge-demo                                # the greedy-vs-saturation experiment
+stack run lozenge-train -- [DIR]                      # the MLP demo; writes DIR/*-loss.csv and .svg (default docs/demo)
 ```
 
 `verify` exits with 1 when a rule has a counterexample, and 2 on bad
@@ -88,6 +126,25 @@ stack test --test-arguments="--quickcheck-tests 1000" # more QuickCheck cases (d
 ```
 
 Tests that need `z3` are reported as `SKIPPED` when `z3` is not on `PATH`.
+
+## Who wrote what
+
+The owner writes lozenge to learn Haskell, with Claude (Anthropic's AI
+coding assistant, through Claude Code) working in one of two modes:
+
+- **The owner's code.** Every library function marked `error "TODO: ..."`
+  in a phase's stub, from the parser and type checker (phases 1–2) through
+  the verifiers, rewriting, e-graph, tensor evaluator, graph IR, fusion,
+  optimiser and `grad` (phases 3–9). `docs/TODO-p*.md` lists them in order.
+- **Written by Claude, in "STUB" sessions.** For each phase: the types,
+  signatures, Haddock specs, the tests (unit, QuickCheck and golden), the
+  compile-fail tests, and the `docs/TODO-p*.md` guides. Claude writes no
+  implementation in these sessions.
+- **Written by Claude, in "BUILD" sessions.** The z3 wrapper
+  (`Lozenge.Solver`), the command line (`Lozenge.Cli`, `Lozenge.Json`,
+  `app/Main.hs`), the greedy-vs-saturation experiment (`app/Demo.hs`), the
+  C emitter and its `cc` test harness (`Lozenge.EmitC`, `test/CHarness.hs`),
+  and the MLP demo (`Lozenge.Mlp`, `app/Train.hs`).
 
 ## What I learned
 

@@ -23,6 +23,7 @@ emitC p = do
       <> zipWith (\i (_, n) -> array (buf (InBuf i)) n) [0 ..] (progInputs p)
       <> zipWith (\i k -> array (buf (TmpBuf i)) (kernelSize k)) [0 ..] (progKernels p)
       <> [""]
+      <> (if any usesRelu (progKernels p) then ["static double relu(double v) { return v > 0.0 ? v : 0.0; }", ""] else [])
       <> concat (zipWith kernelFn [0 ..] (progKernels p))
       <> (if null (progInputs p) then [] else readInput)
       <> ["int main(void) {"]
@@ -95,6 +96,17 @@ ew :: Ew -> Text
 ew (Load b) = buf b <> "[i]"
 ew (EwAdd x y) = "(" <> ew x <> " + " <> ew y <> ")"
 ew (EwMul x y) = "(" <> ew x <> " * " <> ew y <> ")"
+ew (EwRelu x) = "relu(" <> ew x <> ")"
+
+-- The helper is emitted only when used: -Wall -Werror rejects an unused static function.
+usesRelu :: Kernel -> Bool
+usesRelu (Elementwise _ e) = go e
+  where
+    go (Load _) = False
+    go (EwAdd x y) = go x || go y
+    go (EwMul x y) = go x || go y
+    go (EwRelu _) = True
+usesRelu _ = False
 
 buf :: Buf -> Text
 buf (InBuf i) = "in" <> showT i
@@ -135,6 +147,7 @@ checkProgram p = do
     loads (Load b) = [b]
     loads (EwAdd x y) = loads x <> loads y
     loads (EwMul x y) = loads x <> loads y
+    loads (EwRelu x) = loads x
 
 nonNegative :: Text -> [Int] -> Either Text ()
 nonNegative at ns = unless (all (>= 0) ns) $ Left (at <> "negative size or offset in " <> showT ns)
