@@ -9,10 +9,13 @@ import Lozenge.CorpusSpec qualified as CorpusSpec
 import Lozenge.CriticalSpec qualified as CriticalSpec
 import Lozenge.EGraphSpec qualified as EGraphSpec
 import Lozenge.EdgeSpec qualified as EdgeSpec
+import Lozenge.EmitCSpec qualified as EmitCSpec
 import Lozenge.EvalSpec qualified as EvalSpec
 import Lozenge.EvalTSpec qualified as EvalTSpec
 import Lozenge.ExprFSpec qualified as ExprFSpec
 import Lozenge.ExprSpec qualified as ExprSpec
+import Lozenge.FusionSpec qualified as FusionSpec
+import Lozenge.GraphSpec qualified as GraphSpec
 import Lozenge.ParseSpec qualified as ParseSpec
 import Lozenge.PrettySpec qualified as PrettySpec
 import Lozenge.RewriteSpec qualified as RewriteSpec
@@ -22,6 +25,7 @@ import Lozenge.SaturateSpec qualified as SaturateSpec
 import Lozenge.SmtSpec qualified as SmtSpec
 import Lozenge.SolverSpec qualified as SolverSpec
 import Lozenge.SymExecSpec qualified as SymExecSpec
+import Lozenge.TensorOptSpec qualified as TensorOptSpec
 import Lozenge.TensorSpec qualified as TensorSpec
 import Lozenge.TypecheckSpec qualified as TypecheckSpec
 import Lozenge.TypedSpec qualified as TypedSpec
@@ -39,6 +43,7 @@ import Z3 (requireZ3)
 main :: IO ()
 main = do
   z3 <- isJust <$> findExecutable "z3"
+  cc <- isJust <$> findExecutable "cc"
   defaultMain $
     testGroup
       "lozenge"
@@ -65,6 +70,10 @@ main = do
         EGraphSpec.tests,
         SaturateSpec.tests,
         TensorSpec.tests,
+        GraphSpec.tests,
+        FusionSpec.tests,
+        TensorOptSpec.tests,
+        EmitCSpec.tests cc,
         CliSpec.tests z3,
         testGroup
           "harness"

@@ -17,12 +17,15 @@ library
     Lozenge.Critical
     Lozenge.EGraph
     Lozenge.EMatch
+    Lozenge.EmitC
     Lozenge.Eval
     Lozenge.EvalT
     Lozenge.Expr
     Lozenge.ExprF
     Lozenge.Extract
     Lozenge.Fix
+    Lozenge.Fusion
+    Lozenge.Graph
     Lozenge.Json
     Lozenge.Parse
     Lozenge.Pretty
@@ -34,6 +37,7 @@ library
     Lozenge.SymExec
     Lozenge.Tensor
     Lozenge.TensorEval
+    Lozenge.TensorOpt
     Lozenge.Solver
     Lozenge.Typecheck
     Lozenge.Typed
@@ -83,6 +87,7 @@ test-suite spec
   hs-source-dirs:   test
   main-is:          Main.hs
   other-modules:
+    CHarness
     ExprGen
     Golden
     Lozenge.CliSpec
@@ -90,10 +95,13 @@ test-suite spec
     Lozenge.CriticalSpec
     Lozenge.EGraphSpec
     Lozenge.EdgeSpec
+    Lozenge.EmitCSpec
     Lozenge.EvalSpec
     Lozenge.EvalTSpec
     Lozenge.ExprFSpec
     Lozenge.ExprSpec
+    Lozenge.FusionSpec
+    Lozenge.GraphSpec
     Lozenge.ParseSpec
     Lozenge.PrettySpec
     Lozenge.RewriteSpec
@@ -104,12 +112,14 @@ test-suite spec
     Lozenge.SymExecSpec
     Lozenge.SolverSpec
     Lozenge.TypecheckSpec
+    Lozenge.TensorOptSpec
     Lozenge.TensorSpec
     Lozenge.TypedSpec
     Lozenge.UnionFindSpec
     Lozenge.VerifyBruteSpec
     Lozenge.VerifySmtSpec
     Props
+    TensorPrograms
     TExprGen
     Z3
   build-depends:

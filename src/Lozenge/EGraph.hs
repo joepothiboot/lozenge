@@ -1,5 +1,6 @@
 module Lozenge.EGraph (
   ClassId,
+  Language,
   EGraph,
   newEGraph,
   addNode,
@@ -13,34 +14,37 @@ module Lozenge.EGraph (
 where
 
 import Control.Monad.ST (ST)
+import Data.Kind (Type)
 import Data.Text (Text)
-import Lozenge.ExprF (ExprF)
 import Lozenge.Fix (Fix)
 
 type ClassId = Int
 
-data EGraph s
 
-newEGraph :: ST s (EGraph s)
+type Language f = (Traversable f, Ord (f ClassId), Show (f ClassId))
+
+data EGraph (f :: Type -> Type) s
+
+newEGraph :: ST s (EGraph f s)
 newEGraph = error "TODO: newEGraph"
 
-addNode :: EGraph s -> ExprF ClassId -> ST s ClassId
+addNode :: (Language f) => EGraph f s -> f ClassId -> ST s ClassId
 addNode = error "TODO: addNode"
 
-addTerm :: EGraph s -> Fix ExprF -> ST s ClassId
+addTerm :: (Language f) => EGraph f s -> Fix f -> ST s ClassId
 addTerm = error "TODO: addTerm"
 
-merge :: EGraph s -> ClassId -> ClassId -> ST s ()
+merge :: (Language f) => EGraph f s -> ClassId -> ClassId -> ST s ()
 merge = error "TODO: merge"
 
-rebuild :: EGraph s -> ST s ()
+rebuild :: (Language f) => EGraph f s -> ST s ()
 rebuild = error "TODO: rebuild"
 
-equiv :: EGraph s -> ClassId -> ClassId -> ST s Bool
+equiv :: (Language f) => EGraph f s -> ClassId -> ClassId -> ST s Bool
 equiv = error "TODO: equiv"
 
-classes :: EGraph s -> ST s [(ClassId, [ExprF ClassId])]
+classes :: (Language f) => EGraph f s -> ST s [(ClassId, [f ClassId])]
 classes = error "TODO: classes"
 
-checkInvariants :: EGraph s -> ST s [Text]
+checkInvariants :: (Language f) => EGraph f s -> ST s [Text]
 checkInvariants = error "TODO: checkInvariants"

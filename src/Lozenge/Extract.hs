@@ -7,17 +7,17 @@ module Lozenge.Extract (
 where
 
 import Control.Monad.ST (ST)
-import Lozenge.EGraph (ClassId, EGraph)
+import Lozenge.EGraph (ClassId, EGraph, Language)
 import Lozenge.ExprF (ExprF)
 import Lozenge.Fix (Fix)
 
-type CostFn = ExprF Int -> Int
+type CostFn f c = f c -> c
 
-astSize :: CostFn
+astSize :: CostFn ExprF Int
 astSize = error "TODO: astSize"
 
-shiftsAreCheap :: CostFn
+shiftsAreCheap :: CostFn ExprF Int
 shiftsAreCheap = error "TODO: shiftsAreCheap"
 
-extract :: CostFn -> EGraph s -> ClassId -> ST s (Fix ExprF)
+extract :: (Language f, Ord c) => CostFn f c -> EGraph f s -> ClassId -> ST s (Fix f)
 extract = error "TODO: extract"

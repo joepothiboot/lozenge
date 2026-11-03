@@ -12,6 +12,7 @@ where
 import Control.Monad.ST (ST)
 import Data.Text (Text)
 import Lozenge.EGraph (EGraph)
+import Lozenge.ExprF (ExprF)
 import Lozenge.Rule (Rule)
 
 data CheckedRule
@@ -44,5 +45,5 @@ data SatReport = SatReport
   }
   deriving (Eq, Show)
 
-saturate :: Limits -> [CheckedRule] -> EGraph s -> ST s SatReport
+saturate :: Limits -> [CheckedRule] -> EGraph ExprF s -> ST s SatReport
 saturate = error "TODO: saturate"

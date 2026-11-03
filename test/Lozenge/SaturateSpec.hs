@@ -272,11 +272,11 @@ big = Fix (IteF (Fix (CmpF Ult x y)) (add x (neg y)) (mul (lit 3) x))
 sumOf :: Int -> Term
 sumOf n = foldl1 add [Fix (VarF ("v" <> Text.pack (show i))) | i <- [0 .. n - 1]]
 
-mulsAreCheap :: CostFn
+mulsAreCheap :: CostFn ExprF Int
 mulsAreCheap (BinF Shl p q) = 100 + p + q
 mulsAreCheap n = 1 + sum n
 
-costOf :: CostFn -> Term -> Int
+costOf :: CostFn ExprF Int -> Term -> Int
 costOf cf (Fix l) = cf (fmap (costOf cf) l)
 
 binds :: [Text] -> [ClassId] -> ClassSubst
@@ -385,8 +385,8 @@ sameMeaning (te, env) =
       pure (untyped (evalT tenv te'))
 
 
-withGraph :: (forall s. EGraph s -> ST s r) -> r
+withGraph :: (forall s. EGraph ExprF s -> ST s r) -> r
 withGraph k' = runST (newEGraph >>= k')
 
-sameMatches :: (forall s. EGraph s -> ST s ([(ClassId, ClassSubst)], [(ClassId, ClassSubst)])) -> IO ()
+sameMatches :: (forall s. EGraph ExprF s -> ST s ([(ClassId, ClassSubst)], [(ClassId, ClassSubst)])) -> IO ()
 sameMatches k' = let (got, want) = withGraph k' in sort got @?= sort want

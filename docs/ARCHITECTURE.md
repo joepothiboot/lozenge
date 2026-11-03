@@ -19,6 +19,11 @@
 | | `Lozenge.Critical` | critical pairs, joinability, z3 check |
 | E-graphs | `Lozenge.UnionFind`, `Lozenge.EGraph` | union-find and hash-consed e-graph in `ST` |
 | | `Lozenge.EMatch`, `Lozenge.Saturate`, `Lozenge.Extract` | e-matching, saturation with a backoff scheduler, cheapest-term extraction |
+| Tensors | `Lozenge.Tensor`, `Lozenge.TensorEval` | shape-typed `Tensor '[m, k]`, reference evaluator |
+| | `Lozenge.Graph` | hash-consed untyped graph IR, shape inference, `lower` |
+| | `Lozenge.Fusion` | elementwise chains into kernels; kernel count + traffic cost |
+| | `Lozenge.TensorOpt` | tensor rules and extraction on the generic e-graph |
+| | `Lozenge.EmitC` | checked C code for a fused program |
 | CLI | `Lozenge.Cli`, `Lozenge.Json` | the three commands; the JSON schema types |
 | | `app/Main.hs` | argument parsing only (optparse-applicative) |
 

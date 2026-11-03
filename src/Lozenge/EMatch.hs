@@ -13,5 +13,5 @@ import Lozenge.Fix (Fix)
 
 type ClassSubst = Map Text ClassId
 
-ematch :: EGraph s -> Fix ExprF -> ST s [(ClassId, ClassSubst)]
+ematch :: EGraph ExprF s -> Fix ExprF -> ST s [(ClassId, ClassSubst)]
 ematch = error "TODO: ematch"

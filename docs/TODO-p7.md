@@ -29,7 +29,9 @@ tests pass end to end as soon as you implement this phase.
   real tensor libraries.
 - **Constructors carry the dimensions the evaluator needs**, as `KnownNat` or
   `KnownShape` constraints. Matching on the constructor brings them into
-  scope. `Reshape` and `Add` carry none because they don't need a shape.
+  scope. `Add` carries none because it doesn't need a shape. `Reshape` gained
+  `KnownShape t` in Phase 8: the evaluator doesn't need it, but `lower`
+  does.
 - **Axis, start and length are type-level `SNat` arguments**, written
   `Concat (natSing @1) a b`. If you passed the axis only as a type
   application, it would be ambiguous: it appears only under `ConcatAt`, which

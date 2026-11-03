@@ -13,6 +13,12 @@ Steps 1 and 2 need nothing outside 6.
 
 ## Decisions
 
+- **Generic since Phase 8.** `EGraph f s` works over any node functor with
+  `Language f` (`Traversable`, `Ord`, `Show`), and `CostFn f c = f c -> c`
+  takes any `Ord c`, so that Phase 8 can put tensor `Op` nodes in the same
+  e-graph. In this phase, read `f` as `ExprF` and `c` as `Int`: the
+  implementation is the same code.
+
 - **Three modules, plus `classes` in `Lozenge.EGraph`.** `EMatch`, `Extract`
   and `Saturate` each read the graph through `classes`, so `EGraph`'s
   representation stays private to its module. `classes` is the only addition

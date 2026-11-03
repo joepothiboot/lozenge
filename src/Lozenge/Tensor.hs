@@ -61,7 +61,7 @@ data Tensor (s :: [Nat]) :: Type where
     Tensor '[k, n] ->
     Tensor '[m, n]
   Transpose :: (KnownNat m, KnownNat n) => Tensor '[m, n] -> Tensor '[n, m]
-  Reshape :: forall t s. (Product s ~ Product t) => Tensor s -> Tensor t
+  Reshape :: forall t s. (KnownShape t, Product s ~ Product t) => Tensor s -> Tensor t
   Concat ::
     (KnownShape s, KnownShape t) =>
     SNat ax ->

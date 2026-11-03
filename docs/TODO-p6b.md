@@ -10,6 +10,12 @@ too. The tests build terms with the `Fix` constructor, so they don't need 5a.
 
 ## Decisions
 
+- **Generic since Phase 8.** `EGraph f s` works over any node functor with
+  `Language f` (`Traversable`, `Ord`, `Show`), and `CostFn f c = f c -> c`
+  takes any `Ord c`, so that Phase 8 can put tensor `Op` nodes in the same
+  e-graph. In this phase, read `f` as `ExprF` and `c` as `Int`: the
+  implementation is the same code.
+
 - **Every operation takes the `EGraph s` first**, like `UF s` in 6a. The
   phase brief wrote `addTerm :: Fix ExprF -> ST s ClassId`; without the graph
   argument the graph would have to come from a `ReaderT`, which no other

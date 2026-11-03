@@ -218,8 +218,8 @@ agrees ops =
    in cover 10 (length after < length before) "congruence merged a pair the program did not name" $
         counterexample ("model classes " <> show after) (m === expected)
 
-withGraph :: (forall s. EGraph s -> ST s x) -> x
+withGraph :: (forall s. EGraph ExprF s -> ST s x) -> x
 withGraph k = runST (newEGraph >>= k)
 
-abfafb :: EGraph s -> ST s (ClassId, ClassId, ClassId, ClassId)
+abfafb :: EGraph ExprF s -> ST s (ClassId, ClassId, ClassId, ClassId)
 abfafb g = (,,,) <$> addTerm g a <*> addTerm g b <*> addTerm g (f a) <*> addTerm g (f b)
