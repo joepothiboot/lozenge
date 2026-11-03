@@ -28,3 +28,11 @@
 - Asked to check: laziness leaks, `rebuild` termination, extraction of a class that contains itself. There's no code to check yet, so these became rung-1 questions to take into the implementation.
 - Test gaps found: no tasty timeout, so a looping `rebuild` or `extract` hangs the suite instead of failing it; extraction is tested on a one-class cycle but not on a cycle through two classes (merge `a` with `f(f(a))`); no test can detect a space leak (`+RTS -s` is the tool).
 - Next: restore the Phase 6 Haddock, implement 6a, then run `+RTS -s` on `-p /UnionFind/` and `-p /EGraph/` and compare with a baseline taken now.
+
+## 2026-11-03 REVIEW p7–p9 (no implementation found)
+- State: working tree clean at 5ba0eb4. All 21 Phase 7–9 stub sites (Tensor 2, TensorEval 1, Graph 6, Fusion 3, TensorOpt 8, Grad 1) are still `error "TODO"`, and so is every Phase 1–6 stub.
+- Tests: 920/990 fail, all from TODO stubs (evalTensor 63, fuse 48, grad 38 among them). `stack run lozenge-train` crashes at once on `TODO: evalTensor`, so it can't be timed yet.
+- Mutation: not run, because there's no grad to mutate. By inspection, dropping the transpose of the adjoint fails "transpose, weighted" and the finite-difference property. The `seed` makes the root adjoint non-uniform; with an all-ones adjoint, a transposed and an untransposed flat vector are equal.
+- Checked against the tests: slice/concat cover axis 0 and the last axis (2-D and 3-D). programCost pins `Cost kernels traffic`, so a node count fails. Grad sums on `a + a`, `a * a` and one name at two shapes.
+- Test gaps found: (1) no fuse test or shared program has an intermediate node with one Add/Mul consumer and one non-elementwise consumer (for example `s = a + b` feeding both `s * a` and `matmul s c`), which is exactly the "consumer reads a buffer never written". (2) No optimise test fails if `optimise` skips the final `totalCost . programCost` comparison; "never more expensive" only bites if some program gets worse under the tree cost. (3) Slice/concat on axis 0 of a 3-D tensor with a non-zero start isn't tested.
+- Next: implement TODO-p7 step 1 (shapeVal), then evalTensor, and re-run REVIEW on the uncommitted diff.
