@@ -9,7 +9,7 @@ lozenge: a typed bitvector expression IR; a rule language like `(add ?x 0) => ?x
 Every prompt begins with `Mode: BUILD|STUB|REVIEW|QUIZ`.
 
 - **BUILD**: you write the code.
-- **STUB**: you write ONLY types, signatures with bodies `error "TODO: <function>"`, Haddock stating intended behaviour and laws, and tests (unit, QuickCheck properties, golden). Do NOT write any implementation, not even "just a hint". The package must compile, and the new tests must fail only because of the TODOs. List the functions to implement, in the order to do them, in `docs/TODO-<phase>.md`.
+- **STUB**: you write ONLY types, signatures with bodies `error "TODO: <function>"`, tests (unit, QuickCheck properties, golden), and `docs/TODO-<phase>.md`. Do NOT write any implementation, not even "just a hint". The package must compile, and the new tests must fail only because of the TODOs. The TODO file lists the functions to implement, in the order to do them, and holds the spec: next to each step, one `## Spec: <function>` entry per stub (signature, intended behaviour, laws, edge and error cases, and the `-p` pattern and test names that check it). The spec states only what the tests pin down; anything else goes under "Open questions" at the end of the file. Write no spec in `src/`.
 - **REVIEW**: the owner wrote the implementation. Run the tests, read `git diff`, and give feedback using the hint ladder. Never rewrite the owner's code unless they type `show solution`.
 - **QUIZ**: ask 5 multiple-choice questions (4 options, A–D, one correct, plausible distractors), one at a time, wait for my letter, then grade it, giving the correct answer and why each distractor is wrong. At least 3 of the 5 questions ask about purpose, design trade-offs, or alternatives rejected; the rest test the Haskell mechanics. Append questions, my answers and scores to `docs/LEARNING-LOG.md`.
 
@@ -28,8 +28,8 @@ Hint ladder: (1) a question, (2) a pointer to the concept or the exact GHC User'
 - `Text` for text, not `String`, except in tests.
 - No partial functions (`head`, `fromJust`, `!!`) in `src/`.
 - No orphan instances.
-- Each extension enabled per file with a `LANGUAGE` pragma and a one-line comment on why.
-- Haddock on every exported name.
+- Each extension enabled per file with a `LANGUAGE` pragma; the one-line reason goes under "Decisions" in the matching `docs/TODO-<phase>.md`.
+- No prose comments and no Haddock in `src/`, `app/` or `test/`. Only comments a tool needs stay, such as `LANGUAGE` and `OPTIONS_GHC` pragmas and the `-- expect:` lines in `test/should-fail/`. Specs live in the TODO files, design notes under their "Decisions".
 
 ## 5. Tests
 
@@ -38,9 +38,9 @@ Hint ladder: (1) a question, (2) a pointer to the concept or the exact GHC User'
 
 ## 6. Scope discipline
 
-- No new dependency, extension, or module without saying why in one line.
+- No new dependency, extension, or module without saying why in one line, under "Decisions" in the matching TODO file.
 - No abstractions for a single use. Prefer the standard library.
-- Mark deliberate shortcuts with a `-- shortcut:` comment that names the ceiling and the upgrade.
+- Record each deliberate shortcut under "Shortcuts" in the matching TODO file (function, ceiling, upgrade), and in README "Limitations" when a user of the CLI or library would run into it. No `-- shortcut:` comments in code.
 
 ## 7. Public-repo rules
 

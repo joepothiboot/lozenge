@@ -136,10 +136,10 @@ coding assistant, through Claude Code) working in one of two modes:
   in a phase's stub, from the parser and type checker (phases 1–2) through
   the verifiers, rewriting, e-graph, tensor evaluator, graph IR, fusion,
   optimiser and `grad` (phases 3–9). `docs/TODO-p*.md` lists them in order.
-- **Written by Claude, in "STUB" sessions.** For each phase: the types,
-  signatures, Haddock specs, the tests (unit, QuickCheck and golden), the
-  compile-fail tests, and the `docs/TODO-p*.md` guides. Claude writes no
-  implementation in these sessions.
+- **Written by Claude, in "STUB" sessions.** For each phase: the types and
+  signatures, the tests (unit, QuickCheck and golden), the compile-fail
+  tests, and the `docs/TODO-p*.md` guides, which hold each function's spec.
+  Claude writes no implementation in these sessions.
 - **Written by Claude, in "BUILD" sessions.** The z3 wrapper
   (`Lozenge.Solver`), the command line (`Lozenge.Cli`, `Lozenge.Json`,
   `app/Main.hs`), the greedy-vs-saturation experiment (`app/Demo.hs`), the

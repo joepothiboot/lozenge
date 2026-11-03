@@ -1,8 +1,8 @@
 # Phase 7 TODO: shape-typed tensors
 
-Spec: the Haddock in `src/Lozenge/Tensor.hs` and `src/Lozenge/TensorEval.hs`.
-Run a group with, e.g., `stack test --test-arguments='-p /Tensor.eval.matmul/'`.
-Hints are rung 1 (a question). Ask for the next rung when you want it.
+Spec: the `## Spec` entries below. Run a group with, e.g.,
+`stack test --test-arguments='-p /Tensor.eval.matmul/'`. Hints are rung 1 (a
+question). Ask for the next rung when you want it.
 
 **Prerequisites.** None. Phase 7 imports nothing from phases 1–6, so these
 tests pass end to end as soon as you implement this phase.
@@ -87,6 +87,28 @@ Tests: `-p /Tensor.shapeVal/`.
   do you pass to `natVal` for `n`, and to the recursive `shapeVal` for `ns`?
   Why are `n` and `ns` in scope in the instance body at all?*
 
+## Spec: shapeVal '[]
+
+```haskell
+class KnownShape (s :: [Nat]) where shapeVal :: proxy s -> [Int]
+instance KnownShape '[]
+```
+
+- **Behaviour.** The shape of a scalar: `shapeVal (Proxy @'[])` is `[]`.
+- **Tests.** `-p /Tensor.shapeVal/`: "'[]".
+
+## Spec: shapeVal (n ': ns)
+
+```haskell
+instance (KnownNat n, KnownShape ns) => KnownShape (n ': ns)
+```
+
+- **Behaviour.** The type-level shape as a list of `Int`s, outermost
+  dimension first: `n` followed by `shapeVal` of `ns`. Any value of type
+  `Tensor s` serves as the proxy.
+- **Tests.** `-p /Tensor.shapeVal/`: "'[0]", "'[2, 3, 4]", "a tensor is a
+  proxy".
+
 ## 2. `evalTensor`: `Var`, `Add`, `Mul`
 
 Tests: `-p /Tensor.eval.var/` and `-p '/Tensor.eval.add and mul/'`. Leave a
@@ -99,6 +121,45 @@ temporary catch-all equation for the constructors you haven't written yet.
   gives you that with no extra code?*
 - [ ] *Which list function combines two lists pairwise, and why can you skip
   checking that they have the same length?*
+
+## Spec: evalTensor
+
+```haskell
+type Inputs a = Map Text [a]
+data InputError = Unbound Text | WrongLength Text Int Int
+evalTensor :: (Ord a, Num a) => Inputs a -> Tensor s -> Either InputError [a]
+```
+
+- **Values.** Flat row-major lists, last index fastest. The result has
+  `product (shapeVal t)` elements.
+- **Behaviour**, one equation per constructor (steps 2 to 7, and `Relu` in
+  Phase 9):
+  - `Var name`: the input's list. `Unbound name` if `name` is missing, and
+    `WrongLength name expected actual` if its length is not the product of
+    the `Var`'s shape (`Var "a" :: Tensor '[4]` with 6 elements is
+    `WrongLength "a" 4 6`).
+  - `Add`, `Mul`: elementwise.
+  - `Relu`: elementwise `max 0 x`.
+  - `Reshape`: the same list.
+  - `Transpose` of `[m, n]`: element `(i, j)` moves to `(j, i)`.
+  - `MatMul` of `[m, k]` and `[k, n]`: entry `(i, j)` is the sum over `l`
+    of `a(i, l) * b(l, j)`.
+  - `Concat ax a b`: with the dimensions before `ax` as blocks, each block
+    of the result is `a`'s block followed by `b`'s.
+  - `Slice ax start len a`: in each block, keep indices
+    `start .. start + len - 1` of axis `ax`. A length of 0 is allowed, even
+    at `start` equal to the axis size.
+- **Errors.** Only from `Var`s, and the leftmost failing `Var` decides.
+- **Laws** (at `Integer`, exactly): `transpose (transpose x) = x`,
+  `(x y)^T = y^T x^T`, matmul is associative and distributes over add, add
+  and mul commute, reshape and back is the identity, slice undoes concat on
+  axis 0 and axis 1, concat of two slices is the whole, the length is the
+  product of the shape, and `Integer` and `Double` agree.
+- **Tests.** `-p /Tensor.eval/`: `var` ("a", "unbound", "wrong length",
+  "leftmost error wins"), `add and mul` (4), `reshape` (3), `transpose`
+  (4), `matmul` (6), `concat` (6), `slice` (6), each case named by what it
+  computes (for example "axis 1 of [2,3] [2,2]"). Then `-p /Tensor.laws/`
+  (12 properties). `Relu` is checked by `-p relu` in Phase 9.
 
 ## 3. `Reshape`
 
@@ -161,3 +222,13 @@ Tests: `-p /Tensor.eval.slice/`, then the whole group, including `-p /Tensor.law
   such as `ghc-typelits-natnormalise` add?*
 - [ ] *Add a tenth file to `test/should-fail/`, say `MatMul` of a
   `'[2, 3]` with a `'[3]`. Predict GHC's message before you run it.*
+
+## Shortcuts
+
+- **`Transpose` is rank 2 only.** Ceiling: no rank-3 or higher transpose.
+  Upgrade: a type-level permutation `p` and
+  `Tensor s -> Tensor (Permute p s)`, once a program needs rank 3 or more.
+
+## Open questions
+
+None. The tests pin every case.

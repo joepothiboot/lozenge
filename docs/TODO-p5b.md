@@ -1,6 +1,6 @@
 # Phase 5b TODO: matching, unification, rewriting
 
-Spec: the Haddock in `src/Lozenge/Rewrite.hs`. Run a group with, e.g.,
+Spec: the `## Spec` entries below. Run a group with, e.g.,
 `stack test --test-arguments='-p Rewrite.match'`. Hints are rung 1 (a
 question). Ask for the next rung when you want it.
 
@@ -48,6 +48,19 @@ Tests: `-p Rewrite.applySubst`.
 - [ ] *The "one pass" test maps `?x` to `?y` and `?y` to `a`. Why does a
   `cata` give `?y` there and not `a`?*
 
+## Spec: applySubst
+
+```haskell
+type Subst = Map Text (Fix ExprF)
+applySubst :: Subst -> Fix ExprF -> Fix ExprF
+```
+
+- **Behaviour.** Replace every `PVar x` that the substitution binds by its
+  value. A `VarF`, and a `PVar` it does not bind, stay. One pass: a value
+  put in is not substituted again.
+- **Tests.** `-p Rewrite.applySubst`: "replaces a bound PVar everywhere",
+  "leaves VarF and unbound PVar", "one pass".
+
 ## 2. `match`
 
 Tests: `-p Rewrite.match`.
@@ -65,6 +78,28 @@ Tests: `-p Rewrite.match`.
 - [ ] *Which `Foldable` or `Traversable` function walks the children of two
   layers in step? If there is none, what can you zip?*
 
+## Spec: match
+
+```haskell
+match :: Fix ExprF -> Fix ExprF -> Maybe Subst
+```
+
+- **Behaviour.** One-way matching of a pattern against a subject. Only the
+  pattern's `PVar`s bind; anything else in the pattern must equal the
+  subject layer by layer: the same constructor, the same operator, the same
+  `VarF` name, the same literal (width included). A `PVar` in the subject
+  is a constant, but a pattern `PVar` can bind to it. A variable that occurs
+  twice must bind equal subterms.
+- **Laws.**
+  - If `match p t == Just s`, then `applySubst s p == t`.
+  - For every ground substitution `s`, `match p (applySubst s p)` succeeds
+    and binds exactly the pattern's variables.
+- **Tests.** `-p Rewrite.match`: "binds every variable", "a variable that
+  would need two values", "a repeated variable with equal subterms",
+  "constants must agree", "a VarF in the pattern is a constant", "a PVar in
+  the subject is a constant", "a PVar matches a PVar", "literal widths must
+  agree", "operators must agree", and the two laws as properties.
+
 ## 3. `unify`
 
 Tests: `-p Rewrite.unify`.
@@ -81,6 +116,30 @@ Tests: `-p Rewrite.unify`.
 - [ ] *The textbook algorithm works on a list of equations. Is that easier
   here than recursing on the two terms?*
 
+## Spec: unify
+
+```haskell
+unify :: Fix ExprF -> Fix ExprF -> Maybe Subst
+```
+
+- **Behaviour.** A most general unifier of two terms, if there is one.
+  `PVar`s on both sides are variables, and the same name on both sides is
+  one variable. `VarF`s and literals are constants. Binding `x` to a term
+  that contains `x` fails (the occurs check), also through another
+  variable.
+- **Laws.**
+  - If `unify l r == Just s`, then `applySubst s l == applySubst s r`.
+  - The result is idempotent: `applySubst s t == t` for every value `t` in
+    `s`, so one `applySubst` pass is enough.
+  - Most general: every unifier `u` factors through `s`
+    (`u . s = u` on the variables). `Nothing` only when no unifier exists.
+- **Edge cases.** `unify px px` is `Just empty`.
+- **Tests.** `-p Rewrite.unify`: "occurs check", "occurs check through
+  another variable", "a variable with itself", "both sides bind", "the
+  result is idempotent", "operators clash", "VarFs clash"; properties
+  "Just s: applySubst s a == applySubst s b, and s is idempotent" and "most
+  general, checked against every small ground unifier".
+
 ## 4. `rewriteOnce`
 
 Tests: `-p Rewrite.rewriteOnce`.
@@ -93,6 +152,27 @@ Tests: `-p Rewrite.rewriteOnce`.
   that? What would it do instead?*
 - [ ] *Is `para` useful here? At each node you need both the rewritten child
   and the original children.*
+
+## Spec: rewriteOnce
+
+```haskell
+rewriteOnce :: [FixRule] -> Fix ExprF -> Maybe (Fix ExprF)
+```
+
+- **Behaviour.** One rewrite step, outermost then leftmost. At the root, try
+  the rules in list order; the first whose lhs matches gives
+  `applySubst s rhs`. If none applies at the root, rewrite the first child,
+  in `Foldable` order, that can be rewritten (its whole subtree before the
+  next child), and leave the others. Position comes before rule order.
+  `Nothing` if no rule applies anywhere.
+- **Edge cases.** A rule with a precondition (`frPre /= Nothing`) is
+  skipped. A non-linear lhs such as `(xor ?x ?x)` applies only to equal
+  subterms.
+- **Tests.** `-p Rewrite.rewriteOnce`: "outermost: the root first",
+  "leftmost: the left child before the right", "the whole left subtree
+  before the right child", "rules in order at one position", "position
+  before rule order", "a non-linear rule", "a normal form", "a rule with a
+  precondition is skipped".
 
 ## 5. `normalise`
 
@@ -108,3 +188,48 @@ Tests: `-p Rewrite.normalise`.
   last step" tests through it.*
 - [ ] *The cycle check catches a repeat. Give a rule that never terminates
   and never repeats a term. What does the "growing term" test use?*
+
+## Spec: normalise
+
+```haskell
+data NormalForm = Done (Fix ExprF) | Cycle Int [Fix ExprF] | OutOfFuel [Fix ExprF]
+normalise :: Int -> [FixRule] -> Fix ExprF -> ([Text], NormalForm)
+```
+
+- **Behaviour.** Apply `rewriteOnce` repeatedly, using at most `fuel`
+  steps. The first component names the rules skipped for having a
+  precondition, in list order. Before each step, in this order:
+  1. If no rule applies, `Done t`.
+  2. If `fuel` steps are used up, `OutOfFuel ts`, where `ts` is every term
+     seen, from the input on (`fuel + 1` terms).
+  3. Otherwise step to `u`. If `u` was seen before (any earlier term, not
+     only the input), `Cycle k (ts ++ [u])`, where `k` is the number of
+     steps taken (the list has `k + 1` terms and ends with the repeat).
+- **Edge cases.** So `Done` wins when the last step the fuel allows reaches
+  a normal form, and a cycle that closes on that step is still a `Cycle`.
+  Fuel 0 or less: `Done t` if `t` is a normal form, else `OutOfFuel [t]`.
+- **Laws.** In `Cycle` and `OutOfFuel`, each term is `rewriteOnce` of the
+  one before. `OutOfFuel` terms are all distinct. With terminating rules
+  the result is `Done u` and nothing applies to `u`.
+- **Tests.** `-p Rewrite.normalise`: "add-zero twice", "comm on (add a b) is
+  a cycle", "a cycle that closes on the last step", "the repeat need not be
+  the start", "fuel 1 is too little for add-zero twice", "fuel 2 is just
+  enough", "fuel 0", "a growing term runs out of fuel", "a rule with a
+  precondition is skipped and named"; properties "terminating rules: Done,
+  and nothing applies" and "each term seen is rewriteOnce of the one
+  before".
+
+## Shortcuts
+
+- **`match` ignores sorts.** Ceiling: a pattern variable can bind a term of
+  any sort or width, so a rule is applied wherever its shape fits.
+  Upgrade: not recorded (the `-- shortcut:` comment was removed before it
+  was committed).
+- **`rewriteOnce`, `normalise`: rules with a precondition are skipped.**
+  Ceiling: conditional rules never fire in greedy rewriting. Upgrade: not
+  recorded (README, "Limitations": "Conditional rules are partial").
+
+## Open questions
+
+- `normalise`: when a rule with a precondition is named twice in the list,
+  whether its name appears twice. The test uses two different names.

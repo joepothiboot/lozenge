@@ -1,6 +1,6 @@
 # Phase 9 TODO: reverse-mode AD and the MLP demo
 
-Spec: the Haddock on `grad` in `src/Lozenge/Grad.hs`. Run a group with, e.g.,
+Spec: the `## Spec` entry below. Run a group with, e.g.,
 `stack test --test-arguments='-p /Grad.unit/'`. Hints are rung 1 (a
 question). Ask for the next rung when you want it.
 
@@ -70,6 +70,53 @@ Tests: `-p '/an input is all ones/'`, `-p '/add/'`.
   their maps, and what goes in its combining function?*
 - [ ] *The errors must be `evalTensor`'s. What is the cheapest way to get
   exactly those?*
+
+## Spec: grad
+
+```haskell
+grad :: (Ord a, Num a) => Inputs a -> Tensor s -> Either InputError (Map Text [a])
+```
+
+- **Behaviour.** `grad env t` is the gradient of `sum (evalTensor env t)`,
+  the sum of every element of the output, with respect to every input that
+  `t` reads.
+  - **Keys.** One entry for each name in a `Var` of `t`, and no others. A
+    name in `env` that `t` never reads has no entry.
+  - **Values.** A flat row-major list, the same length as the input in
+    `env`, where entry `i` is the partial derivative with respect to input
+    element `i`.
+  - **A name read twice.** When `t` reads one name at two places, even at
+    two shapes of the same length, the two contributions are added
+    elementwise, so `grad env (Mul x x)` is `2 * x`.
+  - **`Relu`.** Its derivative is 1 where the input is positive and 0
+    elsewhere, including at exactly 0, as in PyTorch.
+  - **A weighted sum.** To get the gradient of `sum (w * t)`, which is what
+    a loss needs, differentiate `Mul t (Var "w")`.
+- **Errors.** `grad env t` is `Left e` exactly when `evalTensor env t` is
+  `Left e`, with the same `e`.
+- **Exact.** At `Integer` the result is exact, so the laws hold with `==`.
+  At `Double` it agrees with central finite differences up to rounding,
+  away from the kink of `Relu`.
+- **Laws**, for programs `p` and `q` of the same shape:
+
+  ```haskell
+  grad env (Add p q) == Map.unionWith (zipWith (+)) <$> grad env p <*> grad env q
+  grad env (Var n)   == Right (Map.singleton n (map (const 1) xs))   -- where env ! n == xs
+  ```
+
+- **Tests.** `-p /Grad.unit/`: "an input is all ones", "a + a: one entry,
+  twice the gradient", "add", "mul swaps the operands", "a * a is 2a",
+  "matmul", "matmul, weighted", "transpose, weighted", "reshape, weighted",
+  "concat along axis 1, weighted", "concat along axis 0", "slice: zero
+  outside the slice", "slice, weighted", "relu: 0 at and below 0", "relu,
+  weighted", "one name at two shapes adds up", "unbound", "wrong length",
+  "leftmost error wins". `-p '/Grad.laws at Integer/'`: "keys are the names
+  the program reads", "each gradient has its input's length", "grad (p + q)
+  = grad p + grad q", "grad (3 p) = 3 grad p", "Integer and Double agree".
+  `-p '/central finite differences/'`: one property per program in
+  `test/TensorPrograms.hs`, plus "MLP squared errors, n = 4, h = 3"; each
+  multiplies the program by a random `seed` input, so the adjoint is not
+  all ones.
 
 ## 3. `Mul` and `Relu`
 
@@ -145,3 +192,22 @@ Tests: `-p /Mlp/`, then `stack run lozenge-train`.
   choice for classification, and which op is missing to write it?*
 - [ ] *Replace `Relu` with `tanh`. What happens to `evalTensor`'s
   constraint, and which tests would you lose?*
+
+## Shortcuts
+
+These are in the BUILD code for the demo (`Lozenge.Mlp`), not in `grad`:
+
+- **`squaredErrors`: the IR has no subtraction**, so the targets come in
+  negated, as the input `minus y`. Upgrade: a `Sub` constructor in `Tensor`,
+  `Graph`, `Fusion` and `EmitC`, once a second program needs one.
+- **No bias broadcasting and no constants.** A bias is `MatMul ones b`, and
+  `ones` is an input. Upgrade: not recorded.
+- **`uniforms`: an LCG** is fine for initial weights and toy data, not for
+  statistics. Upgrade: the `random` package.
+- **`train`: plain gradient descent at a fixed rate.** Upgrade: momentum or
+  Adam, which need per-parameter state carried next to `Params`.
+
+## Open questions
+
+None. The tests and the Phase 9 Haddock that survived in git history pin
+every case.

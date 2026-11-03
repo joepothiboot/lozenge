@@ -1,6 +1,6 @@
 # Phase 4a TODO: SMT-LIB emission
 
-Spec: the Haddock in `src/Lozenge/Smt.hs`. Run a group with, e.g.,
+Spec: the `## Spec` entries below. Run a group with, e.g.,
 `stack test --test-arguments='-p Smt.toSmt'`. Hints are rung 1 (a question).
 Ask for the next rung when you want it.
 
@@ -38,6 +38,18 @@ Tests: `-p Smt.smtName`.
 - [ ] *Suppose two different lozenge names gave the same SMT name. What would
   go wrong in the `declare-const`s and in reading back a `get-value` model?*
 
+## Spec: smtName
+
+```haskell
+smtName :: Text -> Text
+```
+
+- **Behaviour.** The SMT-LIB symbol for a lozenge variable: the name with
+  the prefix `v_`. So `x` is `v_x`, `and` is `v_and`, `_` is `v__`.
+- **Laws.** Injective: two different names give two different symbols, so
+  a `get-value` model reads back unambiguously.
+- **Tests.** `-p Smt.smtName`: "x", "a builtin name", "a reserved word".
+
 ## 2. `toSmt`
 
 Tests: `-p Smt.toSmt`.
@@ -57,6 +69,23 @@ Tests: `-p Smt.toSmt`.
   the head and the arguments and adds the parentheses and spaces less
   error-prone than writing `"(" <> ... <> ")"` in every equation? Which
   `Data.Text` function puts spaces between a list of pieces?*
+
+## Spec: toSmt
+
+```haskell
+toSmt :: TExpr t -> Text
+```
+
+- **Behaviour.** One SMT-LIB term, on one line, with single spaces:
+  - `TVar _ x` is `smtName x`;
+  - `true`, `false`;
+  - `VBV w v` is `(_ bvV W)`, both in decimal: `(_ bv255 8)`,
+    `(_ bv18446744073709551615 64)`;
+  - operators by the SMT-LIB column of SEMANTICS.md: `bvnot`, `bvneg`,
+    `bvadd`, `bvsub`, `bvmul`, `bvand`, `bvor`, `bvxor`, `bvshl`, `bvlshr`,
+    `=`, `bvult`, `bvslt`, `ite`, each as `(op arg ...)`.
+- **Tests.** `-p Smt.toSmt`: 22 cases, each named by the expected text, e.g.
+  `(ite (bvult v_x v_y) (bvadd (bvmul v_x v_y) (bvnot (_ bv1 8))) (bvneg v_y))`.
 
 ## 3. `ruleQuery`
 
@@ -79,6 +108,42 @@ Tests: `-p Smt.ruleQuery` (the exact-text cases and the rejects), then
 - [ ] Order. *`Map.toList` gives keys in ascending order. Is `"_"` before or
   after `"and"`? Check the `de-morgan-awkward-names` golden file.*
 
+## Spec: ruleQuery
+
+```haskell
+ruleQuery :: Rule -> Either Text Text
+```
+
+- **Behaviour.** The SMT-LIB script that asks z3 for a counterexample to
+  the rule at its written width (call `instantiate` first for another
+  width). One command per line, each line ending in a newline:
+
+  ```
+  (set-option :produce-models true)
+  (set-logic QF_BV)
+  (declare-const v_x (_ BitVec 4))       one per ruleVars entry, by name
+  (assert (bvult v_x (_ bv8 4)))         only if there is a precondition
+  (assert (not (= LHS RHS)))
+  (check-sat)
+  (get-value (v_x))                      only if there are variables
+  ```
+
+  A `Bool` variable is declared `Bool`. Every variable in `ruleVars` is
+  declared, even one that neither side uses. Declarations are in ascending
+  order of the lozenge name (`_` before `and`).
+- **Errors.** `Left` when the lhs, rhs or precondition does not typecheck
+  against `ruleVars`, when lhs and rhs have different sorts, or when the
+  precondition is not `Bool`: the cases where `verifyBrute` says
+  `Unsupported`.
+- **Laws.** Every line of every query has balanced parentheses. z3 answers
+  `unsat` exactly when the rule is valid.
+- **Tests.** `-p Smt.ruleQuery`: "no variables: no get-value" (exact text),
+  "an unused variable is still declared", and the rejects "lhs Bool, rhs
+  BV", "precondition is not Bool", "ill-typed lhs", "undeclared variable".
+  `-p "Smt.ruleQuery golden"`: 8 goldens in `test/golden/smt/`. The property
+  `-p "Smt.every query"`. `-p "Smt.z3 accepts"` runs z3 on the golden files
+  themselves, so it passes already (skipped without z3).
+
 ## 4. Read the goldens
 
 `test/golden/smt/*.smt2` were written by hand and checked with z3. Run
@@ -86,3 +151,12 @@ Tests: `-p Smt.ruleQuery` (the exact-text cases and the rejects), then
 it give, and does `x - y = y - x` fail for them at width 8?* Do not run
 `--accept` until your output and the golden file differ only in a way you
 understand.
+
+## Shortcuts
+
+None recorded for this phase.
+
+## Open questions
+
+- `ruleQuery`: the text of each `Left`. The tests only check that it is a
+  `Left`.

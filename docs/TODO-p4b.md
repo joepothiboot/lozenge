@@ -1,6 +1,6 @@
 # Phase 4b TODO: the SMT verifier
 
-Spec: the Haddock in `src/Lozenge/VerifySmt.hs`. Run a group with, e.g.,
+Spec: the `## Spec` entries below. Run a group with, e.g.,
 `stack test --test-arguments='-p VerifySmt.runVerify'`. Hints are rung 1 (a
 question). Ask for the next rung when you want it.
 
@@ -39,6 +39,19 @@ Tests: `-p VerifySmt.runVerify`.
 - [ ] *`deriving newtype (MonadReader Config)`: what instance does that
   generate, and why didn't you have to write `ask` yourself?*
 
+## Spec: runVerify
+
+```haskell
+newtype Verify a = Verify (ReaderT Config (ExceptT VerifyError IO) a)
+runVerify :: Config -> Verify a -> IO (Either VerifyError a)
+```
+
+- **Behaviour.** Run a `Verify` action with the given `Config`. A
+  `throwError e` inside it gives `Left e`; otherwise `Right` the result.
+  `ask`/`asks` read the `Config`, and `liftIO` runs `IO`.
+- **Tests.** `-p VerifySmt.runVerify`: "pure", "asks reads the config",
+  "throwError", "liftIO".
+
 ## 2. `toAssignment`
 
 Tests: `-p VerifySmt.toAssignment`.
@@ -49,6 +62,24 @@ Tests: `-p VerifySmt.toAssignment`.
 - [ ] *Why look up `smtName x` and not `x`? What does `"other"` in the first
   test check?*
 - [ ] *Which Phase 1 function already decides whether `VBV w n` fits?*
+
+## Spec: toAssignment
+
+```haskell
+type Model = Map Text Integer      -- from Lozenge.Solver
+toAssignment :: Context -> Model -> Either Text Assignment
+```
+
+- **Behaviour.** Read z3's model back as an assignment of the context's
+  variables. Each declared `x` is looked up under `smtName x`. A `BV w`
+  variable becomes `VBV w n`; a `Bool` variable is `1` for `true` and `0`
+  for `false`. Symbols that belong to no declared variable are ignored.
+- **Errors.** `Left` if a declared variable is missing from the model, if a
+  BV value is not `validValue` at its width (256 at width 8), or if a Bool
+  value is not 0 or 1.
+- **Tests.** `-p VerifySmt.toAssignment`: "BV and Bool, extra symbols
+  ignored", "a missing variable", "a BV value too wide", "a Bool value other
+  than 0 or 1".
 
 ## 3. `verifySmt`
 
@@ -72,6 +103,36 @@ Tests: `-p "VerifySmt.Unsupported before z3"`, then
 - [ ] Width 32. *Brute force would try 2^64 assignments for `add-comm`. What
   does z3 do instead of enumerating them?*
 
+## Spec: verifySmt
+
+```haskell
+data Config = Config {configWidth :: Int, configTimeoutMs :: Int}
+data VerifyError = SolverFailed Text | SpuriousCounterexample Assignment
+verifySmt :: Rule -> Verify Verdict
+```
+
+- **Behaviour.** The SMT counterpart of `verifyBrute`, at width
+  `configWidth`:
+  1. `instantiate` at that width; `Nothing` is `Unsupported`.
+  2. `ruleQuery`; a `Left` is `Unsupported`.
+  3. Run z3 with `configTimeoutMs`. `unsat` is `Valid`. `unknown`, a timeout
+     included, is `Unsupported`.
+  4. `sat`: read the model with `toAssignment`, then evaluate the
+     precondition, lhs and rhs at it with `evalT`. If the precondition
+     holds and the two sides differ, the verdict is
+     `Counterexample assignment lhsValue rhsValue`, as Phase 1 values.
+- **Errors (thrown, not verdicts).** `SolverFailed msg` when z3 is missing,
+  rejects the query, or gives no answer. `SpuriousCounterexample a` when
+  z3's model is not a real counterexample under `evalT`.
+- **Laws.** Wherever brute force finishes, `verifySmt` agrees with it:
+  both `Valid`, both `Unsupported`, or both counterexamples (not
+  necessarily the same one), each confirmed by `evalT`.
+- **Tests.** `-p "VerifySmt.Unsupported before z3"`: "ill-typed lhs",
+  "Generic at width 0", "Generic at width 65" (no z3 needed). Then, with
+  z3: `-p "VerifySmt.beyond brute force"` ("add-comm at width 32 is
+  valid", "ult-to-slt at width 32 has a real counterexample") and
+  `-p "VerifySmt.corpus"` (the 30 corpus rules at widths 1 to 6).
+
 ## 4. Reading a corpus failure
 
 `-p "VerifySmt.corpus"` runs all 30 rules at one width per test and lists
@@ -83,3 +144,14 @@ every disagreement, each with where to look first.
   trusting the lhs and rhs inside `Counterexample`. Why?*
 - [ ] *Brute force says `Valid`, z3 finds a counterexample, and `evalT`
   confirms it. Why does that point at `verifyBrute`, not at z3?*
+
+## Shortcuts
+
+None recorded for this phase. README, "Limitations": `--solver smt|both`
+needs z3 on `PATH`.
+
+## Open questions
+
+- `toAssignment`: the text of each `Left`.
+- `verifySmt`: the text inside `Unsupported` and `SolverFailed`. The tests
+  only check the constructors.

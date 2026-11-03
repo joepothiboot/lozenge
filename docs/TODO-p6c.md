@@ -1,9 +1,8 @@
 # Phase 6c TODO: saturation and extraction
 
-Spec: the Haddock in `src/Lozenge/EMatch.hs`, `src/Lozenge/Extract.hs`,
-`src/Lozenge/Saturate.hs`, and `classes` in `src/Lozenge/EGraph.hs`. Run a
-group with, e.g., `stack test --test-arguments='-p Saturate.ematch'`. Hints
-are rung 1 (a question). Ask for the next rung when you want it.
+Spec: the `## Spec` entries below. Run a group with, e.g.,
+`stack test --test-arguments='-p Saturate.ematch'`. Hints are rung 1 (a
+question). Ask for the next rung when you want it.
 
 **Prerequisites.** All of 6a and 6b. `loadRules` needs Phase 3's
 `verifyBrute`, `instantiate` and `renderVerdict`, and 5a's `ruleToFix`.
@@ -23,7 +22,7 @@ Steps 1 and 2 need nothing outside 6.
   and `Saturate` each read the graph through `classes`, so `EGraph`'s
   representation stays private to its module. `classes` is the only addition
   to 6b.
-- **`ClassSubst`, not `Subst'`.** Haddock reads `'Subst''` badly, and the
+- **`ClassSubst`, not `Subst'`.** `Subst'` reads badly in prose, and the
   name says what it maps to. It is `Map Text ClassId`, next to 5b's `Subst`.
 - **`extract` returns `ST s (Fix ExprF)`**, not a pure `Fix ExprF`: the graph
   lives in `STRef`s, and reading one is an `ST` action.
@@ -52,7 +51,7 @@ Steps 1 and 2 need nothing outside 6.
   (`x + y` with comm saturates in 2) and the node count (15 for comm and assoc
   on 3 variables).
 - **`CostFn` must be strictly monotone**: a node costs more than each child.
-  That keeps extraction out of cycles; the Haddock says how.
+  That keeps extraction out of cycles; the `extract` Spec says how.
 - **`shiftsAreCheap`**: shifts 1, multiplication 4, leaves 1, anything else 2,
   plus the children. So `x << 1` costs 3 and `x * 2` costs 6.
 - **The tests write rules by hand**, as `Rule`s in the corpus style, so they
@@ -70,12 +69,46 @@ Tests: `-p EGraph.classes`.
   share that code, and which `Data.Set` function gives "deduplicated, in
   ascending order" in one step?*
 
+## Spec: classes
+
+```haskell
+classes :: (Language f) => EGraph f s -> ST s [(ClassId, [f ClassId])]
+```
+
+- **Behaviour.** Every class once, in ascending order of its (root) id,
+  with its nodes canonicalised, deduplicated and in ascending order. After
+  `merge a b` and `rebuild`, `f(a)` and `f(b)` are one node.
+- **Tests.** `-p EGraph.classes`: "each class once, by ascending id, with its
+  nodes", "after merge a b and rebuild: one class with a and b, and f(a),
+  f(b) as one node".
+
 ## 2. `astSize` and `shiftsAreCheap`
 
 Tests: `-p "Saturate.extract.astSize and shiftsAreCheap, node by node"`.
 
 - [ ] *`ExprF` is `Foldable`. What does `sum` of an `ExprF Int` add up, and
   what is it for a leaf?*
+
+## Spec: astSize
+
+```haskell
+type CostFn f c = f c -> c
+astSize :: CostFn ExprF Int
+```
+
+- **Behaviour.** 1 plus the children's costs; a leaf costs 1.
+- **Tests.** `-p "Saturate.extract.astSize and shiftsAreCheap, node by node"`.
+
+## Spec: shiftsAreCheap
+
+```haskell
+shiftsAreCheap :: CostFn ExprF Int
+```
+
+- **Behaviour.** Plus the children's costs: a shift (`shl`, `lshr`) 1, a
+  multiplication 4, a leaf 1, anything else 2. So `x << 1` costs 3 and
+  `x * 2` costs 6.
+- **Tests.** `-p "Saturate.extract.astSize and shiftsAreCheap, node by node"`.
 
 ## 3. `extract`
 
@@ -91,6 +124,28 @@ Tests: `-p Saturate.extract`.
   floor?*
 - [ ] *Reading the term back top-down: why can't it loop, even though the
   graph has a cycle? Which law on `CostFn` do you rely on?*
+
+## Spec: extract
+
+```haskell
+extract :: (Language f, Ord c) => CostFn f c -> EGraph f s -> ClassId -> ST s (Fix f)
+```
+
+- **Behaviour.** A cheapest term of the id's class under the cost
+  function. Compute a best cost per class as a fixpoint: a node can be
+  costed once every child class has a cost, and a class's cost is its
+  cheapest costable node's. Then read the term back top-down, taking each
+  class's best node.
+- **Precondition.** The `CostFn` is strictly monotone: a node costs more
+  than each of its children. Then every child on the way down has a
+  strictly smaller cost than its parent, so the read-back never revisits a
+  class, even when the graph has a cycle.
+- **Edge cases.** A non-canonical (stale) id extracts its class. With no
+  merges, a term extracts to itself.
+- **Tests.** `-p Saturate.extract`: "with no merges, a term extracts to
+  itself", "cycles: once f(a) = a, f(a) and f(f(a)) extract to a", "the
+  cost function decides: shifts or multiplications", "a stale id still
+  extracts its class".
 
 ## 4. `ematch`
 
@@ -108,6 +163,29 @@ Tests: `-p Saturate.ematch`.
 - [ ] *Why can the same `(class, substitution)` come out twice, and where do
   you remove duplicates?*
 
+## Spec: ematch
+
+```haskell
+type ClassSubst = Map Text ClassId
+ematch :: EGraph ExprF s -> Fix ExprF -> ST s [(ClassId, ClassSubst)]
+```
+
+- **Behaviour.** Every `(class, substitution)` such that the pattern
+  matches a term in the class, with each `PVar` bound to a class. A `PVar`
+  alone matches every class once. A `VarF` or a literal in the pattern
+  matches only itself. A variable that occurs twice must bind one class.
+  Matching goes through classes, so a pattern matches a node whose child
+  class holds the needed node. A class with two matching nodes, such as
+  `(add a b)` and `(add b a)`, gives two results. Class ids are canonical,
+  and there are no duplicates. The order is not specified.
+- **Tests.** `-p Saturate.ematch`: "(add ?x ?y) on (add a b) binds x to a and
+  y to b", "a variable that occurs twice binds one class: (xor ?x ?x)", "it
+  matches through classes: (neg (add ?x ?y)) on neg c, once c = a + b", "a
+  class holding (add a b) and (add b a) matches (add ?x ?y) twice", "?x
+  alone matches every class once", "a term variable in a pattern matches
+  only itself: (add a ?y)", "a literal in a pattern matches only itself:
+  (add ?x 0)". Results are compared after sorting.
+
 ## 5. `loadRules` and `checkedRule`
 
 Tests: `-p Saturate.loadRules` (the last one needs step 6).
@@ -119,6 +197,41 @@ Tests: `-p Saturate.loadRules` (the last one needs step 6).
   `Either` runs all three?*
 - [ ] *Which `Data.Either` function splits a list of results into the
   accepted and the refused, in order?*
+
+## Spec: checkedRule
+
+```haskell
+data CheckedRule      -- constructor not exported
+checkedRule :: CheckedRule -> Rule
+```
+
+- **Behaviour.** The rule as `loadRules` accepted it, that is, instantiated
+  at the load width: `map checkedRule (fst (loadRules 4 [r]))` is
+  `maybeToList (instantiate 4 r)` for a valid `r`.
+- **Tests.** `-p Saturate.loadRules`: "an accepted rule is instantiated at
+  the width".
+
+## Spec: loadRules
+
+```haskell
+loadRules :: Int -> [Rule] -> ([CheckedRule], [(Text, Text)])
+```
+
+- **Behaviour.** Admit each rule only if it verifies at width `w`: run
+  `instantiate w`, then `verifyBrute w` (precondition included), then
+  `ruleToFix`. A rule passes only if all three succeed and the verdict is
+  `Valid`. The result is the accepted rules and the refused ones as
+  `(name, reason)`, each in input order. For a verdict that is not
+  `Valid`, the reason is `renderVerdict` of that verdict. `Unsupported` is
+  refused, so `add-assoc` (24 bits) is refused at width 8 and accepted at
+  width 4.
+- **Tests.** `-p Saturate.loadRules`: "a wrong rule is refused, the valid
+  ones kept", "the reason is the verdict", "a rule too big to check is
+  refused: assoc at width 8 has 24 bits", "the same rule at width 4 is
+  accepted", "a valid rule with a precondition is accepted", "an accepted
+  rule is instantiated at the width", "the property's rule set loads with
+  nothing refused", "a refused rule can't corrupt the graph: not a and neg a
+  stay apart".
 
 ## 6. `saturate`
 
@@ -142,6 +255,47 @@ Tests: `-p Saturate.saturate`, then the property.
   extractions. Which is wrong: the meaning (a bad merge, so saturation) or
   only the cost (extraction)?*
 
+## Spec: saturate
+
+```haskell
+data Limits = Limits {limIters, limNodes, limMatches, limBan :: Int}
+data StopReason = Saturated | IterLimit | NodeLimit
+data SatReport = SatReport {satStop :: StopReason, satIterations :: Int, satNodes :: Int, satBanned :: [Text]}
+saturate :: Limits -> [CheckedRule] -> EGraph ExprF s -> ST s SatReport
+```
+
+- **Precondition.** The graph holds terms of the width the rules were
+  loaded at, and Bools.
+- **One iteration.** `ematch` every rule that is not banned, all before
+  applying any. Then, for each match, instantiate the rhs (a `PVar` is its
+  bound class, any other layer an `addNode`) and merge it with the matched
+  class. Then `rebuild`.
+- **Preconditions on rules.** A match fires only if every variable of the
+  precondition is bound to a class holding a literal, and `eval` on those
+  literals gives `true`. Otherwise it is skipped.
+- **Scheduler** (egg's backoff). A rule banned `k` times so far has a
+  threshold of `limMatches * 2^k` matches. A rule over its threshold in an
+  iteration is banned for `limBan * 2^k` iterations, and `k` goes up.
+  `satBanned` names every rule banned at least once, in rule order.
+- **Stopping.** After each iteration, in this order:
+  1. `Saturated` if the iteration changed nothing (the same number of
+     classes and nodes before and after) and no rule was hidden by a ban;
+  2. `NodeLimit` if the graph has more than `limNodes` nodes;
+  3. `IterLimit` after `limIters` iterations.
+- **Report.** `satIterations` counts every iteration run, the last included,
+  and `satNodes` is the number of nodes in the graph at the end.
+- **Tests.** `-p Saturate.saturate`: "x*2 and x<<1 end up in one class;
+  shiftsAreCheap picks the shift", "(x+0)+0 extracts to x", "commutativity
+  alone saturates: x + y in 2 iterations, 4 nodes", "comm and assoc saturate
+  3 variables at 3^3 - 2^4 + 1 + 3 = 15 nodes", "on 7 variables (1932 nodes
+  saturated) the node limit stops it", "on 7 variables with 2 iterations
+  allowed, the iteration limit stops it", "the scheduler bans rules that
+  match too often, in rule order", "bans delay saturation but don't prevent
+  it", "with a high threshold, nothing is banned", "saturating a saturated
+  graph takes 1 iteration", "a precondition is decided on literals: lshr 3
+  4 is 0; lshr 200 4 and lshr x 4 are not". Then the property "the
+  extracted term means the same as the input and costs no more".
+
 ## 7. Afterwards
 
 - [ ] *Run comm and assoc on 4 to 7 variables and compare the node counts
@@ -149,3 +303,26 @@ Tests: `-p Saturate.saturate`, then the property.
   though every term is "the same sum"?*
 - [ ] *Run the corpus's valid rules through `loadRules 8`. Which are refused
   as `Unsupported`, and would `loadRules 4` accept them?*
+
+## Shortcuts
+
+- **`loadRules` verifies by brute force.** Ceiling: a rule over the
+  `2^20`-assignment cap is refused at that width (`add-assoc` at width 8).
+  Upgrade: SMT, which would make `loadRules` an `IO` action.
+- **`saturate` decides preconditions on literals only.** Ceiling: a
+  conditional rule fires only when its variables are bound to classes
+  holding literals; sound but incomplete. Upgrade: a constant-folding
+  e-class analysis.
+- **`ematch` is naive.** Ceiling: patterns are matched top-down against
+  every class, with no indexing, so saturation slows down quickly as the
+  graph grows; node and iteration limits stop it. Upgrade: indexing or
+  relational e-matching (README, "Limitations").
+
+## Open questions
+
+- `extract`: which node wins a tie between two of equal cost.
+- `saturate`: whether a rule is banned when its matches reach the
+  threshold or only when they exceed it; and whether "changed nothing"
+  counts nodes the way `classes` does (canonical and deduplicated).
+- `loadRules`: the reason text when `instantiate` or `ruleToFix` refuses a
+  rule.
