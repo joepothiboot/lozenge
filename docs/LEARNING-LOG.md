@@ -36,3 +36,11 @@
 - Checked against the tests: slice/concat cover axis 0 and the last axis (2-D and 3-D). programCost pins `Cost kernels traffic`, so a node count fails. Grad sums on `a + a`, `a * a` and one name at two shapes.
 - Test gaps found: (1) no fuse test or shared program has an intermediate node with one Add/Mul consumer and one non-elementwise consumer (for example `s = a + b` feeding both `s * a` and `matmul s c`), which is exactly the "consumer reads a buffer never written". (2) No optimise test fails if `optimise` skips the final `totalCost . programCost` comparison; "never more expensive" only bites if some program gets worse under the tree cost. (3) Slice/concat on axis 0 of a 3-D tensor with a non-zero start isn't tested.
 - Next: implement TODO-p7 step 1 (shapeVal), then evalTensor, and re-run REVIEW on the uncommitted diff.
+
+## 2026-11-03 REVIEW p3 steps 5–7 (no implementation found)
+- State: working tree clean at 3c4e67f, with no other branch or stash. `parseExpr`, `lexeme`, `identifier`, `constBody`, `exprWith`, `mkRule` and `parseRules` are all still `error "TODO"`. `test/golden/rule-errors.txt` and `test/golden/parse-errors.txt` don't exist yet.
+- Tests: `-p RuleParse` 54/54 fail (14 on `TODO: mkRule`, 40 on `TODO: parseRules`); the Parse group fails the same way on `TODO: parseExpr`.
+- Mutation: not run, because there's no binding check to mutate. By inspection, letting an rhs-only variable through fails all three binding tests in `mkRule rejects`: "rhs uses ?y" twice (the sort check reports "cannot infer the sort" instead) and "precondition uses ?z" (the rule is accepted).
+- Asked to check: reuse of `exprWith`, width inference, unbound variables, Bool/BV conflicts, the golden messages. There's no code or golden file yet, so these became rung-1 questions.
+- Spec gap found: the pinned message `rule r: ?p is used as both Bool and BV` names the two sorts, not the two positions (`ite` condition, `ite` branch). If the message should name positions, the test expectation and the `mkRule` Spec in TODO-p3 must change first.
+- Next: implement `exprWith` and `parseExpr` (TODO-p1 step 4 and TODO-p3 step 5), get `-p Parse` green, accept the parse-errors golden, then REVIEW again on the uncommitted diff.
