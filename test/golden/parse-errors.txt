@@ -1,0 +1,188 @@
+--- ""
+1:1:
+  |
+1 | <empty line>
+  | ^
+unexpected end of input
+expecting expression
+--- "   "
+1:4:
+  |
+1 |    
+  |    ^
+unexpected end of input
+expecting expression
+--- "()"
+1:2:
+  |
+1 | ()
+  |  ^
+unexpected ')'
+expecting operator
+--- "("
+1:2:
+  |
+1 | (
+  |  ^
+unexpected end of input
+expecting operator
+--- "(add x y"
+1:9:
+  |
+1 | (add x y
+  |         ^
+unexpected end of input
+expecting ')'
+--- "(add x y))"
+1:10:
+  |
+1 | (add x y))
+  |          ^
+unexpected ')'
+expecting end of input
+--- "x y"
+1:3:
+  |
+1 | x y
+  |   ^
+unexpected 'y'
+expecting end of input
+--- "3"
+1:1:
+  |
+1 | 3
+  | ^
+unexpected '3'
+expecting expression
+--- "1x"
+1:1:
+  |
+1 | 1x
+  | ^^
+unexpected "1x"
+expecting expression
+--- "(x)"
+1:2:
+  |
+1 | (x)
+  |  ^
+unknown operator x
+--- "(foo x y)"
+1:2:
+  |
+1 | (foo x y)
+  |  ^
+unknown operator foo
+--- "(addx y z)"
+1:2:
+  |
+1 | (addx y z)
+  |  ^
+unknown operator addx
+--- "(add x)"
+1:7:
+  |
+1 | (add x)
+  |       ^
+unexpected ')'
+expecting expression
+--- "(add x y z)"
+1:10:
+  |
+1 | (add x y z)
+  |          ^
+unexpected 'z'
+expecting ')'
+--- "(not x y)"
+1:8:
+  |
+1 | (not x y)
+  |        ^
+unexpected 'y'
+expecting ')'
+--- "(ite x y)"
+1:9:
+  |
+1 | (ite x y)
+  |         ^
+unexpected ')'
+expecting expression
+--- "(= x)"
+1:5:
+  |
+1 | (= x)
+  |     ^
+unexpected ')'
+expecting expression
+--- "(const 8)"
+1:9:
+  |
+1 | (const 8)
+  |         ^
+unexpected ')'
+expecting digit or value
+--- "(const 8 3 4)"
+1:12:
+  |
+1 | (const 8 3 4)
+  |            ^
+unexpected '4'
+expecting ')'
+--- "(const x 3)"
+1:8:
+  |
+1 | (const x 3)
+  |        ^
+unexpected 'x'
+expecting width
+--- "(const 8 x)"
+1:10:
+  |
+1 | (const 8 x)
+  |          ^
+unexpected 'x'
+expecting value
+--- "(const 8 -1)"
+1:10:
+  |
+1 | (const 8 -1)
+  |          ^
+unexpected '-'
+expecting value
+--- "(const 0 0)"
+1:8:
+  |
+1 | (const 0 0)
+  |        ^
+width 0 is not between 1 and 64
+--- "(const 65 0)"
+1:8:
+  |
+1 | (const 65 0)
+  |        ^
+width 65 is not between 1 and 64
+--- "(const 8 256)"
+1:10:
+  |
+1 | (const 8 256)
+  |          ^
+value 256 does not fit in 8 bits
+--- "(const 1 2)"
+1:10:
+  |
+1 | (const 1 2)
+  |          ^
+value 2 does not fit in 1 bits
+--- "(const 64 18446744073709551616)"
+1:11:
+  |
+1 | (const 64 18446744073709551616)
+  |           ^
+value 18446744073709551616 does not fit in 64 bits
+--- "(add x y) ; comment"
+1:11:
+  |
+1 | (add x y) ; comment
+  |           ^
+unexpected ';'
+expecting end of input

@@ -172,6 +172,27 @@ parseExpr :: Text -> Either ParseError Expr
   (`test/golden/parse-errors.txt`, written on the first passing run), and
   the property `parseExpr (render e) == Right e`.
 
+## Decisions
+
+- `OverloadedStrings` in `Expr`, `Parse` and `Pretty`: for `Text` and `Doc` literals.
+- `unOpName`, `binOpName`, `cmpOpName` live in `Lozenge.Expr`, so `render` and
+  `exprWith` share one table and can't disagree.
+- `render`: `parens (nest 2 (sep ...))`. A term wider than 80 columns breaks at
+  every argument of the form that doesn't fit, indented by 2. A deep term can
+  still pass 80 columns, because indentation and closing parentheses grow.
+- `parseExpr`: errors have no file name (`1:8:`, not `file:1:8:`); `Cli` adds
+  the path.
+- `parseExpr`: `(=x y)` parses, because `=` can't run into the next word.
+  No test decides this.
+- `parseExpr`: whitespace is exactly space, tab and newline, so `\r` is an
+  error, as SEMANTICS.md says.
+- `constBody` checks the width before reading the value, and does not read the
+  closing `)`.
+- `exprWith leaf constForm`: the variable leaf first, then the const body.
+- `identifier` eats trailing whitespace and rejects `true` and `false`, as the
+  grammar says, so `?true` will fail in rules. `exprWith` tries the Boolean
+  literals before its leaf.
+
 ## Shortcuts
 
 - **`eval`, `parseExpr`: no division or remainder**, no signed shift right,
@@ -186,8 +207,6 @@ parseExpr :: Text -> Either ParseError Expr
 
 ## Open questions
 
-- `render`: the layout of a term wider than 80 columns (where it breaks and
-  how it indents). The tests only require that it parses back.
 - `parseExpr`: the wording and position of each error message, until you
   accept `test/golden/parse-errors.txt`. Step 4 asks you to make the
   out-of-range `v` error point at `v`.

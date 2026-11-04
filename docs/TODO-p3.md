@@ -372,15 +372,13 @@ run `--accept` until you know.
 
 ## Open questions
 
+`exprWith`, `identifier` and `constBody` are decided: see "Decisions" in
+[TODO-p1.md](TODO-p1.md).
+
 - `verifyBrute`: the text inside `Unsupported` for each refusal. The tests
   only check the constructor.
 - `verifyBrute`: whether a `Counterexample`'s assignment includes declared
   variables that neither side reads. No unit test has one.
-- `exprWith`: which argument is the variable leaf and which the const body.
-  No test calls it directly.
-- `lexeme`, `identifier`: whether `identifier` itself rejects `true` and
-  `false` (so that `?true` fails) and whether it eats trailing whitespace.
-- `constBody`: whether it also reads the closing `)`.
 - `mkRule`: the message when several rhs variables are unbound (one, or
   all?); whether the rhs binding check comes before the precondition's;
   the message for an ill-typed precondition.

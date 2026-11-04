@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Lozenge.Expr (
   Value (..),
   UnOp (..),
@@ -6,6 +8,9 @@ module Lozenge.Expr (
   Expr (..),
   Env,
   validValue,
+  unOpName,
+  binOpName,
+  cmpOpName,
 )
 where
 
@@ -51,4 +56,24 @@ data Expr
 type Env = Map Text Value
 
 validValue :: Value -> Bool
-validValue = error "TODO: validValue"
+validValue (VBool _) = True
+validValue (VBV w v) = 1 <= w && w <= 64 && 0 <= v && v < 2 ^ w
+
+unOpName :: UnOp -> Text
+unOpName Not = "not"
+unOpName Neg = "neg"
+
+binOpName :: BinOp -> Text
+binOpName Add = "add"
+binOpName Sub = "sub"
+binOpName Mul = "mul"
+binOpName And = "and"
+binOpName Or = "or"
+binOpName Xor = "xor"
+binOpName Shl = "shl"
+binOpName Lshr = "lshr"
+
+cmpOpName :: CmpOp -> Text
+cmpOpName Eq = "="
+cmpOpName Ult = "ult"
+cmpOpName Slt = "slt"
