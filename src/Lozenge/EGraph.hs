@@ -20,7 +20,6 @@ import Lozenge.Fix (Fix)
 
 type ClassId = Int
 
-
 type Language f = (Traversable f, Ord (f ClassId), Show (f ClassId))
 
 data EGraph (f :: Type -> Type) s

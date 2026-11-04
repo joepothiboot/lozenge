@@ -1,0 +1,5 @@
+- ignore: {name: "Functor law", within: [Lozenge.ExprFSpec, Lozenge.SymExecSpec]}
+- ignore: {name: "Monad law, left identity", within: [Lozenge.SymExecSpec]}
+- ignore: {name: "Monad law, right identity", within: [Lozenge.SymExecSpec]}
+- ignore: {name: "Length always non-negative", within: [Lozenge.EvalSpec]}
+- ignore: {name: "Redundant reverse", within: [Main]}

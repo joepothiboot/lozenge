@@ -149,8 +149,8 @@ finiteDifferences sizes (Prog name p) =
           let fd = central k i
            in counterexample (T.unpack k <> "[" <> show i <> "]: grad " <> show g <> ", finite difference " <> show fd) $
                 abs (fd - g) <= 1e-4 * (1 + abs g)
-     in all ((> 1e-2) . abs) (reluInputs env q)
-          QC.==> case grad env q of
+     in all ((> 1e-2) . abs) (reluInputs env q) QC.==>
+          case grad env q of
             Left err -> counterexample (show err) False
             Right gs -> conjoin [close k i g | (k, g_k) <- M.toList gs, (i, g) <- zip [0 ..] g_k]
   where

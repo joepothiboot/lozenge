@@ -127,6 +127,12 @@ stack test --test-arguments="--quickcheck-tests 1000" # more QuickCheck cases (d
 
 Tests that need `z3` are reported as `SKIPPED` when `z3` is not on `PATH`.
 
+While library functions are still stubs, tests that reach one fail with
+`TODO: <function>`, so `stack test` exits non-zero. Those tests are pending,
+not passing. CI runs `python3 scripts/test-gate.py`, which prints
+`N tests pending on stubs` and fails on any other failure, so a green CI badge
+means only that no test failed for a reason other than a stub.
+
 ## Who wrote what
 
 The owner writes lozenge to learn Haskell, with Claude (Anthropic's AI

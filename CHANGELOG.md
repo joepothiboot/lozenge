@@ -4,6 +4,9 @@
 
 lozenge is a Haskell workbench for bitvector rewrite rules.
 
+Status: most library functions below are still `error "TODO"` stubs (see
+`docs/TODO-p*.md`). Their tests are pending, not passing.
+
 - Typed bitvector/boolean IR (widths 1 to 64, SMT-LIB semantics) with a
   parser, a pretty-printer and two evaluators.
 - A rule language with width-generic rules, and a 30-rule corpus in which 8

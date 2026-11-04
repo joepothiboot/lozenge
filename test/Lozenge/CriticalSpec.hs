@@ -23,7 +23,7 @@ import Lozenge.VerifySmt (Config (..), runVerify)
 import Props (props)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.HUnit (assertFailure, testCase, (@?=))
-import Test.Tasty.QuickCheck (Gen, checkCoverage, conjoin, counterexample, cover, elements, forAll, frequency, testProperty)
+import Test.Tasty.QuickCheck (Gen, checkCoverage, conjoin, cover, elements, forAll, frequency, testProperty)
 import Z3 (requireZ3)
 
 tests :: TestTree
@@ -106,7 +106,6 @@ setA = [fg, gb]
 pairsA :: [Canon]
 pairsA = [("f-g", "g-b", [0], notE (neg b), a, notE c)]
 
-
 setB :: [FixRule]
 setB = [addZero, comm]
 
@@ -115,7 +114,6 @@ pairsB =
   [ ("add-zero", "comm", [], add (pv "v0") zero, pv "v0", add zero (pv "v0")),
     ("comm", "add-zero", [], add (pv "v0") zero, add zero (pv "v0"), pv "v0")
   ]
-
 
 setC :: [FixRule]
 setC = [notNot, deMorgan]
@@ -131,7 +129,6 @@ pairsC =
       notE (orE (notE (pv "v0")) (notE (pv "v1")))
     )
   ]
-
 
 bogus :: [FixRule]
 bogus = [xorSelf, xorLeft]
@@ -177,7 +174,6 @@ isJoined :: Joinability -> Bool
 isJoined (Joined _) = True
 isJoined _ = False
 
-
 peakLaw :: [FixRule] -> CriticalPair -> Bool
 peakLaw rs cp = case (byName (cpOuter cp), byName (cpInner cp)) of
   (Just o, Just i) ->
@@ -202,8 +198,8 @@ genRules = do
   sequence [genRule ("r" <> T.pack (show k)) | k <- [1 .. n]]
   where
     genRule name = do
-      lhs <- genOp ["x", "y"] 2
-      rhs <- frequency [(1, genLeaf (pvars lhs)), (2, genOp (pvars lhs) 1)]
+      lhs <- genOp ["x", "y"] (2 :: Int)
+      rhs <- frequency [(1, genLeaf (pvars lhs)), (2, genOp (pvars lhs) (1 :: Int))]
       pure (rule name lhs rhs)
     genOp vs d = frequency [(1, neg <$> genT vs (d - 1)), (2, add <$> genT vs (d - 1) <*> genT vs (d - 1))]
     genT vs d = if d <= 0 then genLeaf vs else frequency [(2, genLeaf vs), (1, genOp vs d)]
@@ -213,7 +209,6 @@ pvars :: Fix ExprF -> [Text]
 pvars (Fix l) = case l of
   PVar n -> [n]
   _ -> concatMap pvars l
-
 
 type Canon = (Text, Text, [Int], Fix ExprF, Fix ExprF, Fix ExprF)
 

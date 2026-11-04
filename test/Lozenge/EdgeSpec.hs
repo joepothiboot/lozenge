@@ -1,6 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-
 module Lozenge.EdgeSpec (tests) where
 
 import Data.Map.Strict qualified as Map

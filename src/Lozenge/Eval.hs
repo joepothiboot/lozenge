@@ -1,7 +1,7 @@
-module Lozenge.Eval
-  ( EvalError (..),
-    eval,
-  )
+module Lozenge.Eval (
+  EvalError (..),
+  eval,
+)
 where
 
 import Data.Text (Text)

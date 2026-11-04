@@ -34,9 +34,9 @@ tests =
             testProperty "eval results are valid values" $
               forAllShrink genExpr shrinkExpr $ \e ->
                 let r = eval testEnv e
-                 in counterexample (show r) $
-                      cover 40 (isRight r) "evaluates" $
-                        either (const True) validValue r
+                 in counterexample (show r)
+                      $ cover 40 (isRight r) "evaluates"
+                      $ either (const True) validValue r
           ]
     ]
 

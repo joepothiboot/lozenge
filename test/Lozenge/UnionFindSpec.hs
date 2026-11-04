@@ -42,9 +42,9 @@ tests =
                   pure (r, ps)
               )
               @?= (0, [0, 0, 0, 0, 4]),
-          props $
-            testProperty "after find, every element on the old path has depth <= 1" $
-              forAllShrinkShow genOps shrinkOps show (checkCoverage . compressLaw)
+          props
+            $ testProperty "after find, every element on the old path has depth <= 1"
+            $ forAllShrinkShow genOps shrinkOps show (checkCoverage . compressLaw)
         ],
       testGroup
         "union"
@@ -56,15 +56,15 @@ tests =
             withSets 3 (\uf -> union uf 0 1 >> (,) <$> union uf 2 0 <*> parents uf) @?= (0, [0, 0, 0]),
           testCase "already in one set: returns the root, changes nothing" $
             withSets 2 (\uf -> union uf 0 1 >> (,) <$> union uf 1 0 <*> parents uf) @?= (0, [0, 0]),
-          props $
-            testProperty "union by rank: 2 ^ depth <= the size of the element's set" $
-              forAllShrinkShow genOps shrinkOps show (checkCoverage . rankLaw)
+          props
+            $ testProperty "union by rank: 2 ^ depth <= the size of the element's set"
+            $ forAllShrinkShow genOps shrinkOps show (checkCoverage . rankLaw)
         ],
       testGroup
         "against a model"
-        [ props $
-            testProperty "find agrees with a list of sets after every step" $
-              checkCoverage (agrees runUF),
+        [ props
+            $ testProperty "find agrees with a list of sets after every step"
+            $ checkCoverage (agrees runUF),
           testCase "shrinking: a known bug fails in at most 5 steps" $ do
             r <- quickCheckWithResult stdArgs{chatty = False, maxSuccess = 1000} (agrees runBuggy)
             case r of
@@ -156,13 +156,13 @@ compressLaw ops = case run ops findDeepest of
   Just (before, x, after) ->
     let path = pathOf before x
         els = [0 .. length before - 1]
-     in cover 15 (length path > 2) "the path has 2 or more edges" $
-          counterexample ("parents before " <> show before <> ", find " <> show x <> ", parents after " <> show after) $
-            [y | y <- path, depth after y > 1]
-              === []
-              .&&. map (root after) els
+     in cover 15 (length path > 2) "the path has 2 or more edges"
+          $ counterexample ("parents before " <> show before <> ", find " <> show x <> ", parents after " <> show after)
+          $ [y | y <- path, depth after y > 1]
+            === []
+            .&&. map (root after) els
               === map (root before) els
-              .&&. [y | y <- els, y `notElem` path, after !! y /= before !! y]
+            .&&. [y | y <- els, y `notElem` path, after !! y /= before !! y]
               === []
   where
     findDeepest :: UF s -> ST s (Maybe ([Int], Int, [Int]))
@@ -181,9 +181,9 @@ rankLaw ops =
   let ps = run ops parents
       els = [0 .. length ps - 1]
       size x = length [y | y <- els, root ps y == root ps x]
-   in cover 15 (any (\x -> depth ps x >= 2) els) "some depth >= 2" $
-        counterexample ("parents " <> show ps) $
-          conjoin [counterexample ("element " <> show x) (2 ^ depth ps x <= size x) | x <- els]
+   in cover 15 (any (\x -> depth ps x >= 2) els) "some depth >= 2"
+        $ counterexample ("parents " <> show ps)
+        $ conjoin [counterexample ("element " <> show x) (2 ^ depth ps x <= size x) | x <- els]
 
 -- | What a step returned, and the 'find' of every element after it.
 type Step = (Int, [Int])
@@ -220,9 +220,9 @@ checkStep op m (r, reps) =
     [(a, b) | a <- els, b <- els, (reps !! a == reps !! b) /= same m a b]
       === []
       .&&. [a | a <- els, not (same m a (reps !! a))]
-      === []
+        === []
       .&&. r
-      === expected
+        === expected
   where
     els = [0 .. length (concat m) - 1]
     expected = case op of

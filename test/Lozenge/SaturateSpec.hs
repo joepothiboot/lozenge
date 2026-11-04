@@ -240,7 +240,6 @@ tests =
         $ forAll genCase (checkCoverage . sameMeaning)
     ]
 
-
 type Term = Fix ExprF
 
 a, b, c, x, y :: Term
@@ -281,7 +280,6 @@ costOf cf (Fix l) = cf (fmap (costOf cf) l)
 
 binds :: [Text] -> [ClassId] -> ClassSubst
 binds vs ids = Map.fromList (zip vs ids)
-
 
 rule :: Text -> [Text] -> Expr -> Expr -> Rule
 rule name vs l r = Rule name Generic (Map.fromList [(v, TBV 8) | v <- vs]) l r Nothing
@@ -335,7 +333,6 @@ roomy = Limits{limIters = 30, limNodes = 100000, limMatches = 100000, limBan = 2
 runAc :: Int -> Limits -> SatReport
 runAc n lims = withGraph (\g -> addTerm g (sumOf n) >> saturate lims (fst (loadRules 4 [addComm, addAssoc])) g)
 
-
 ctx8 :: Context
 ctx8 = Map.fromList [("x", TBV 8), ("y", TBV 8)]
 
@@ -383,7 +380,6 @@ sameMeaning (te, env) =
       tenv <- tenvE
       SomeExpr _ te' <- either (Left . show) Right (toTyped ctx8 t)
       pure (untyped (evalT tenv te'))
-
 
 withGraph :: (forall s. EGraph ExprF s -> ST s r) -> r
 withGraph k' = runST (newEGraph >>= k')
