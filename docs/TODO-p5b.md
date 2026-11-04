@@ -188,6 +188,9 @@ Tests: `-p Rewrite.normalise`.
   last step" tests through it.*
 - [ ] *The cycle check catches a repeat. Give a rule that never terminates
   and never repeats a term. What does the "growing term" test use?*
+- [ ] *Run "two terms of the same shape in a row are not a cycle" and "two
+  terms that differ only in a literal are not a cycle". What exactly does your
+  "seen before?" compare?*
 
 ## Spec: normalise
 
@@ -215,9 +218,17 @@ normalise :: Int -> [FixRule] -> Fix ExprF -> ([Text], NormalForm)
   a cycle", "a cycle that closes on the last step", "the repeat need not be
   the start", "fuel 1 is too little for add-zero twice", "fuel 2 is just
   enough", "fuel 0", "a growing term runs out of fuel", "a rule with a
-  precondition is skipped and named"; properties "terminating rules: Done,
+  precondition is skipped and named", "two terms of the same shape in a row
+  are not a cycle", "two terms that differ only in a literal are not a
+  cycle"; properties "terminating rules: Done,
   and nothing applies" and "each term seen is rewriteOnce of the one
   before".
+- **Derivation of the two same-shape tests.** `swap-a-b` is `(add a b) =>
+  (add b a)`. Its only match is at the root of `(add a b)`, and nothing matches
+  `(add b a)`, so the terms are `(add a b), (add b a)` and the result is
+  `Done (add b a)`. They have the same size, depth, root operator and variables
+  but are not equal. `zero-to-one` is `(add a 0) => (add a 1)`, which gives
+  `Done (add a 1)` the same way; those two terms differ only in a literal.
 
 ## Shortcuts
 

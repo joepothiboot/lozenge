@@ -131,6 +131,10 @@ tests =
                   mapM (extract astSize g) [fa, ffa]
               )
               @?= [a, a],
+          testCase "a cycle through two classes: merge a f(f(a))" $
+            twoClassCycle merge @?= twoClassCycleTerms,
+          testCase "a cycle through two classes: merge f(f(a)) a" $
+            twoClassCycle (\g ia ffa -> merge g ffa ia) @?= twoClassCycleTerms,
           testCase "the cost function decides: shifts or multiplications" $
             withGraph
               ( \g -> do
@@ -380,6 +384,19 @@ sameMeaning (te, env) =
       tenv <- tenvE
       SomeExpr _ te' <- either (Left . show) Right (toTyped ctx8 t)
       pure (untyped (evalT tenv te'))
+
+twoClassCycle :: (forall s. EGraph ExprF s -> ClassId -> ClassId -> ST s ()) -> [Fix ExprF]
+twoClassCycle mergeThem = withGraph $ \g -> do
+  sumId <- addTerm g (add a (neg a))
+  ffa <- addTerm g (neg (neg a))
+  fa <- addTerm g (neg a)
+  ia <- addTerm g a
+  mergeThem g ia ffa
+  rebuild g
+  mapM (extract astSize g) [ia, fa, ffa, sumId]
+
+twoClassCycleTerms :: [Fix ExprF]
+twoClassCycleTerms = [a, neg a, a, add a (neg a)]
 
 withGraph :: (forall s. EGraph ExprF s -> ST s r) -> r
 withGraph k' = runST (newEGraph >>= k')

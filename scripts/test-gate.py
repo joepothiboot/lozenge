@@ -5,7 +5,7 @@ import re
 import subprocess
 import sys
 
-FAIL = re.compile(r"^( *)(.*?):\s+FAIL\b")
+FAIL = re.compile(r"^( *)(.*?):\s+(?:FAIL|TIMEOUT)\b")
 STUB = re.compile(
     r"^(\*\*\* Failed! [^\n]*\n\s*)?(Exception:\s+)?TODO: [^\n]+\n"
     r"\s*CallStack \(from HasCallStack\):\n\s*error, called at src/"

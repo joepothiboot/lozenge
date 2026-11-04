@@ -37,7 +37,7 @@ import Lozenge.VerifySmtSpec qualified as VerifySmtSpec
 import Props (props)
 import System.Directory (findExecutable)
 import System.Process (readProcess)
-import Test.Tasty (defaultMain, testGroup)
+import Test.Tasty (defaultMain, localOption, mkTimeout, testGroup)
 import Test.Tasty.HUnit (testCase, (@?=))
 import Test.Tasty.QuickCheck (testProperty)
 import Z3 (requireZ3)
@@ -46,7 +46,7 @@ main :: IO ()
 main = do
   z3 <- isJust <$> findExecutable "z3"
   cc <- isJust <$> findExecutable "cc"
-  defaultMain $
+  defaultMain . localOption (mkTimeout 64_000_000) $
     testGroup
       "lozenge"
       [ ExprSpec.tests,

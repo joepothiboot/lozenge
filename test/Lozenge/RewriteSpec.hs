@@ -113,6 +113,10 @@ tests =
             normalise 10 [intoComm, comm] (notE a) @?= ([], Cycle 3 [notE a, add a b, add b a, add a b]),
           testCase "fuel 1 is too little for add-zero twice" $
             normalise 1 [addZero] twice @?= ([], OutOfFuel [twice, add a zero]),
+          testCase "two terms of the same shape in a row are not a cycle" $
+            normalise 10 [swapAB] (add a b) @?= ([], Done (add b a)),
+          testCase "two terms that differ only in a literal are not a cycle" $
+            normalise 10 [zeroToOne] (add a zero) @?= ([], Done (add a one)),
           testCase "fuel 2 is just enough" $ normalise 2 [addZero] twice @?= ([], Done a),
           testCase "fuel 0" $ do
             normalise 0 [addZero] a @?= ([], Done a)
@@ -176,7 +180,7 @@ sub = Map.fromList
 rule :: Text -> Fix ExprF -> Fix ExprF -> FixRule
 rule n l r = FixRule n Generic (Map.fromList [("x", TBV 8), ("y", TBV 8)]) l r Nothing
 
-addZero, notNot, negNeg, negDrop, xorSelf, comm, toA, intoComm, grow, guarded :: FixRule
+addZero, notNot, negNeg, negDrop, xorSelf, comm, toA, intoComm, grow, guarded, swapAB, zeroToOne :: FixRule
 addZero = rule "add-zero" (add px zero) px
 notNot = rule "not-not" (notE (notE px)) px
 negNeg = rule "neg-neg" (neg (neg px)) px
@@ -187,6 +191,8 @@ toA = rule "to-a" (add px py) a
 intoComm = rule "into-comm" (notE a) (add a b)
 grow = rule "grow" (neg px) (neg (neg px))
 guarded = (rule "guarded" (add px zero) px){frPre = Just (Fix (CmpF Ult px zero))}
+swapAB = rule "swap-a-b" (add a b) (add b a)
+zeroToOne = rule "zero-to-one" (add a zero) (add a one)
 
 terminating :: [FixRule]
 terminating = [addZero, negNeg]
@@ -194,10 +200,11 @@ terminating = [addZero, negNeg]
 twice :: Fix ExprF
 twice = add (add a zero) zero
 
-a, b, zero, px, py :: Fix ExprF
+a, b, zero, one, px, py :: Fix ExprF
 a = Fix (VarF "a")
 b = Fix (VarF "b")
 zero = Fix (LitF (U.VBV 8 0))
+one = Fix (LitF (U.VBV 8 1))
 px = pv "x"
 py = pv "y"
 

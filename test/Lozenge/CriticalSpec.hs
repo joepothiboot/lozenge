@@ -51,6 +51,7 @@ tests =
         [ testCase "f(g(x)) -> a and g(b) -> c" $ canonAll setA @?= sort pairsA,
           testCase "add-zero and comm" $ canonAll setB @?= sort pairsB,
           testCase "not-not and de-morgan-and" $ canonAll setC @?= sort pairsC,
+          testCase "ite and a comparison below the root" $ canonAll setD @?= sort pairsD,
           testCase "a rule with a precondition is skipped" $ canonAll [guarded, addZero] @?= [],
           testCase "a rule alone: no root self-overlap" $ canonAll [addZero] @?= [],
           testCase "the same rule twice in the list overlaps at the root" $
@@ -129,6 +130,24 @@ pairsC =
       notE (orE (notE (pv "v0")) (notE (pv "v1")))
     )
   ]
+
+setD :: [FixRule]
+setD = [iteUltSelf, negNeg, ultSelf]
+
+pairsD :: [Canon]
+pairsD =
+  [ ("ite-ult-self", "neg-neg", [0, 0], peakCond, neg v2, ite (ult v0 (neg (neg v0))) v1 (neg v2)),
+    ("ite-ult-self", "neg-neg", [0, 1], peakCond, neg v2, ite (ult (neg (neg v0)) v0) v1 (neg v2)),
+    ("ite-ult-self", "ult-self", [0], ite ultNeg v1 (neg v2), neg v2, ite false v1 (neg v2)),
+    ("ite-ult-self", "neg-neg", [2], ite ultNeg v1 (neg (neg v2)), neg (neg v2), ite ultNeg v1 v2),
+    ("neg-neg", "neg-neg", [0], neg (neg (neg v0)), neg v0, neg v0)
+  ]
+  where
+    v0 = pv "v0"
+    v1 = pv "v1"
+    v2 = pv "v2"
+    ultNeg = ult (neg v0) (neg v0)
+    peakCond = ite (ult (neg (neg v0)) (neg (neg v0))) v1 (neg v2)
 
 bogus :: [FixRule]
 bogus = [xorSelf, xorLeft]
@@ -252,7 +271,7 @@ vars8 ns = Map.fromList [(n, TBV 8) | n <- ns]
 rule :: Text -> Fix ExprF -> Fix ExprF -> FixRule
 rule n l r = FixRule n Generic (vars8 (pvars l <> pvars r)) l r Nothing
 
-fg, gb, addZero, comm, notNot, deMorgan, xorSelf, xorLeft, guarded :: FixRule
+fg, gb, addZero, comm, notNot, deMorgan, xorSelf, xorLeft, guarded, iteUltSelf, negNeg, ultSelf :: FixRule
 fg = (rule "f-g" (notE (neg px)) a){frWidth = Fixed}
 gb = (rule "g-b" (neg b) c){frWidth = Fixed}
 addZero = rule "add-zero" (add px zero) px
@@ -262,12 +281,16 @@ deMorgan = rule "de-morgan-and" (notE (andE px py)) (orE (notE px) (notE py))
 xorSelf = rule "xor-self" (xor px px) zero
 xorLeft = rule "xor-left" (xor px py) px
 guarded = (rule "guarded" (add px zero) px){frPre = Just (Fix (CmpF Ult px zero))}
+iteUltSelf = rule "ite-ult-self" (ite (ult (neg px) (neg px)) py (neg (pv "z"))) (neg (pv "z"))
+negNeg = rule "neg-neg" (neg (neg px)) px
+ultSelf = rule "ult-self" (ult px px) false
 
-a, b, c, zero, px, py :: Fix ExprF
+a, b, c, zero, false, px, py :: Fix ExprF
 a = Fix (VarF "a")
 b = Fix (VarF "b")
 c = Fix (VarF "c")
 zero = Fix (LitF (U.VBV 8 0))
+false = Fix (LitF (U.VBool False))
 px = pv "x"
 py = pv "y"
 
@@ -283,3 +306,9 @@ add l r = Fix (BinF Add l r)
 xor l r = Fix (BinF Xor l r)
 andE l r = Fix (BinF And l r)
 orE l r = Fix (BinF Or l r)
+
+ult :: Fix ExprF -> Fix ExprF -> Fix ExprF
+ult l r = Fix (CmpF Ult l r)
+
+ite :: Fix ExprF -> Fix ExprF -> Fix ExprF -> Fix ExprF
+ite p t e = Fix (IteF p t e)

@@ -12,6 +12,10 @@ Steps 1 and 2 need nothing outside 6.
 
 ## Decisions
 
+- **Every test has a 64 s timeout** (`localOption (mkTimeout 64_000_000)` in
+  `test/Main.hs`), so a looping `rebuild`, `extract` or `normalise` fails instead
+  of hanging. That is 10x the slowest group that passes today, `EmitC.compiled
+  with cc.hand-built programs`, at 6.37 s (11 tests, 2026-11-04, on a Mac).
 - **Generic since Phase 8.** `EGraph f s` works over any node functor with
   `Language f` (`Traversable`, `Ord`, `Show`), and `CostFn f c = f c -> c`
   takes any `Ord c`, so that Phase 8 can put tensor `Op` nodes in the same
@@ -124,6 +128,9 @@ Tests: `-p Saturate.extract`.
   floor?*
 - [ ] *Reading the term back top-down: why can't it loop, even though the
   graph has a cycle? Which law on `CostFn` do you rely on?*
+- [ ] *Run "a cycle through two classes: merge a f(f(a))" and "... merge f(f(a))
+  a". Why might one of them fail when the other passes? Which id is the root in
+  each?*
 
 ## Spec: extract
 
@@ -145,7 +152,23 @@ extract :: (Language f, Ord c) => CostFn f c -> EGraph f s -> ClassId -> ST s (F
 - **Tests.** `-p Saturate.extract`: "with no merges, a term extracts to
   itself", "cycles: once f(a) = a, f(a) and f(f(a)) extract to a", "the
   cost function decides: shifts or multiplications", "a stale id still
-  extracts its class".
+  extracts its class", "a cycle through two classes: merge a f(f(a))", "a cycle
+  through two classes: merge f(f(a)) a".
+- **Derivation of the two-class cycle**, with `f = neg` and `astSize`. Add
+  `(add a (neg a))` and `(neg (neg a))`, then merge `a` with `(neg (neg a))` and
+  rebuild. Call the class of `a` A and the class of `(neg a)` F:
+  - A holds `a` and `(neg F)`; F holds `(neg A)`; the sum's class S holds
+    `(add A F)`.
+  - Congruence merges nothing more: `(neg A)` and `(neg F)` have different
+    children, so A and F stay apart. `a = f(f(a))` does not imply `a = f(a)`.
+  - Costs: `a` is 1 and `(neg A)` is 2. Then A's `(neg F)` is 3, so A stays at
+    1 and F at 2. `(add A F)` is 1 + 1 + 2 = 4.
+  - Extraction: A gives `a`; F gives `(neg a)`; the stale id of `(neg (neg a))`
+    is in A, so it gives `a`; S gives `(add a (neg a))`.
+
+  The expected list, for the ids of `a`, `(neg a)`, `(neg (neg a))` and the sum,
+  is `[a, (neg a), a, (add a (neg a))]`, in both merge directions. No class has
+  a tie.
 
 ## 4. `ematch`
 
@@ -306,6 +329,12 @@ saturate :: Limits -> [CheckedRule] -> EGraph ExprF s -> ST s SatReport
 
 ## Shortcuts
 
+- **The 64 s timeout comes from today's passing tests.** Ceiling: most tests
+  still stop at a stub, so a slow correct test (such as z3 on the corpus, or
+  brute force at 2^20) has never been timed, and could time out on a slower
+  machine. A loop that does not allocate can't be interrupted. `localOption` also
+  overrides `--timeout` on the command line. Upgrade: re-measure once the stubs
+  are done.
 - **`loadRules` verifies by brute force.** Ceiling: a rule over the
   `2^20`-assignment cap is refused at that width (`add-assoc` at width 8).
   Upgrade: SMT, which would make `loadRules` an `IO` action.

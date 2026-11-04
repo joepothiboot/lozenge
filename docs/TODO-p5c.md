@@ -88,6 +88,8 @@ Tests: `-p "Critical.criticalPairs, by hand"`, then the property.
   that share the name `?x` and give a unifier that would be missed.*
 - [ ] *Why are `PVar` positions left out? What would overlapping at a variable
   produce?*
+- [ ] *Run "ite and a comparison below the root". Does your position walk go
+  into every kind of node with children?*
 
 ## Spec: criticalPairs
 
@@ -125,9 +127,30 @@ criticalPairs :: [FixRule] -> [CriticalPair]
   -> c", "add-zero and comm", "not-not and de-morgan-and", "a rule with a
   precondition is skipped", "a rule alone: no root self-overlap", "the same
   rule twice in the list overlaps at the root", "the variables and their
-  sorts", and the property "each peak rewrites to exactly its two reducts".
-  Pairs are compared after renaming variables to `v0, v1, ...` by first
+  sorts", "ite and a comparison below the root", and the property "each peak
+  rewrites to exactly its two reducts". Pairs are compared after renaming variables to `v0, v1, ...` by first
   occurrence and sorting, so your fresh names and order don't matter there.
+- **Derivation of "ite and a comparison below the root".** The rules:
+  - `ite-ult-self`: `(ite (ult (neg ?x) (neg ?x)) ?y (neg ?z)) => (neg ?z)`
+  - `neg-neg`: `(neg (neg ?x)) => ?x`
+  - `ult-self`: `(ult ?x ?x) => false`
+
+  Write `w` for the renamed variable of the inner rule. The non-`PVar` positions
+  of the first lhs are `[]` (ite), `[0]` (ult), `[0,0]`, `[0,1]` and `[2]`
+  (neg). `[1]`, `[0,0,0]`, `[0,1,0]` and `[2,0]` are variables. Each overlap:
+
+  | Outer / inner | Position | Unifier | Peak | Left | Right |
+  |---|---|---|---|---|---|
+  | `ite-ult-self` / `neg-neg` | `[0,0]` | `?x := (neg w)` | `(ite (ult (neg (neg w)) (neg (neg w))) ?y (neg ?z))` | `(neg ?z)` | `(ite (ult w (neg (neg w))) ?y (neg ?z))` |
+  | `ite-ult-self` / `neg-neg` | `[0,1]` | `?x := (neg w)` | the same | `(neg ?z)` | `(ite (ult (neg (neg w)) w) ?y (neg ?z))` |
+  | `ite-ult-self` / `ult-self` | `[0]` | `w := (neg ?x)` | `(ite (ult (neg ?x) (neg ?x)) ?y (neg ?z))` | `(neg ?z)` | `(ite false ?y (neg ?z))` |
+  | `ite-ult-self` / `neg-neg` | `[2]` | `?z := (neg w)` | `(ite (ult (neg ?x) (neg ?x)) ?y (neg (neg w)))` | `(neg (neg w))` | `(ite (ult (neg ?x) (neg ?x)) ?y w)` |
+  | `neg-neg` / `neg-neg` | `[0]` | `?x := (neg w)` | `(neg (neg (neg w)))` | `(neg w)` | `(neg w)` |
+
+  Nothing else overlaps. `ite` unifies with no other rule's lhs, and its own root
+  overlap is left out. `neg` and `ult` never unify with each other. `neg-neg` and
+  `ult-self` have no other non-`PVar` position that unifies, and their own root
+  overlaps are left out. So there are 5 pairs.
 
 ## 3. `joinable`
 
