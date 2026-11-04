@@ -8,6 +8,8 @@ module Lozenge.Parse (
   identifier,
   constBody,
   exprWith,
+  failAt,
+  natural,
 )
 where
 

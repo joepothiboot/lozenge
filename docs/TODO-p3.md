@@ -358,6 +358,38 @@ first differing line: *which is wrong, your `verifyBrute`, `instantiate`,
 `mkRule`'s sort inference, or the Python? Check by hand at that width.* Do not
 run `--accept` until you know.
 
+## Decisions
+
+- `OverloadedStrings` in `RuleParse` and `VerifyBrute`: for `Text` literals.
+- `Rule` exports `mapLiterals`: `instantiate` and `mkRule` both rewrite every
+  literal of an `Expr`.
+- `Typed` exports `someSort` and `eraseValue`: `mkRule` and `verifyBrute` need a
+  term's sort as a `Ty`, and `verifyBrute` needs Phase 1 values. They are not
+  named `tyOf` or `untyped`, which `test/TExprGen.hs` defines and would clash with.
+- `Parse` exports `failAt` and `natural`, so rule errors and the placeholder
+  value work as in `constBody`.
+- `verifyBrute`: checks every declared width with `checkTy` before counting. An
+  unused `TBV 0` is `Unsupported`, and a huge declared width can't blow up `2^w`.
+- `verifyBrute`: a `Counterexample`'s assignment holds every declared variable,
+  used or not, as in `test/ref/brute.py`.
+- `verifyBrute`: `Unsupported` holds a short sentence, or `show` of the
+  `TypeError`. The tests only check the constructor.
+- `renderVerdict`: assumes valid values, which is all `verifyBrute` produces;
+  `showHex` throws on a negative payload in a hand-built `Counterexample`.
+- `mkRule`: with more than two widths it reports the two smallest. With several
+  unbound variables it reports the first by name, rhs before precondition. An
+  ill-typed precondition is `rule r: precondition is ill-typed: <error>`.
+- `mkRule`: a variable that is the whole precondition is `Bool`, as in
+  `test/ref/corpus.py`. A whole lhs or rhs still gives no sort.
+- `mkRule`: a negative literal width is `rule r: width -1 is not between 1 and
+  64`, because it would otherwise underflow `TBV`'s `Natural`. The parser can't
+  produce one.
+- `parseRules`: a rule name is `[A-Za-z0-9_-]+`, including a leading digit or
+  `-`. `rule`, `w` and `:if` must not be followed by a name character, so
+  `(rule-x ...)` is rejected.
+- `parseRules`: a rule that fails `mkRule` and also repeats a name reports the
+  `mkRule` error.
+
 ## Shortcuts
 
 - **`instantiate` / `RuleWidth`: a `Generic` rule is written at one width
@@ -375,12 +407,5 @@ run `--accept` until you know.
 `exprWith`, `identifier` and `constBody` are decided: see "Decisions" in
 [TODO-p1.md](TODO-p1.md).
 
-- `verifyBrute`: the text inside `Unsupported` for each refusal. The tests
-  only check the constructor.
-- `verifyBrute`: whether a `Counterexample`'s assignment includes declared
-  variables that neither side reads. No unit test has one.
-- `mkRule`: the message when several rhs variables are unbound (one, or
-  all?); whether the rhs binding check comes before the precondition's;
-  the message for an ill-typed precondition.
-- `parseRules`: the exact characters allowed in a rule name, and the wording
-  of each syntax error until you accept `test/golden/rule-errors.txt`.
+- `parseRules`: the wording of each syntax error, until you accept
+  `test/golden/rule-errors.txt`.

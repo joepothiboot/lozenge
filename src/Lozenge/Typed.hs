@@ -8,6 +8,8 @@ module Lozenge.Typed (
   TExpr (..),
   SomeExpr (..),
   erase,
+  eraseValue,
+  someSort,
   widthOf,
 )
 where
@@ -56,12 +58,19 @@ deriving instance Show SomeExpr
 
 erase :: TExpr t -> Expr
 erase (TVar _ x) = Var x
-erase (TLit (VBool b)) = Lit (U.VBool b)
-erase (TLit (VBV w v)) = Lit (U.VBV (widthOf w) v)
+erase (TLit v) = Lit (eraseValue v)
 erase (TUn op a) = Un op (erase a)
 erase (TBin op a b) = Bin op (erase a) (erase b)
 erase (TCmp op a b) = Cmp op (erase a) (erase b)
 erase (TIte c t e) = Ite (erase c) (erase t) (erase e)
+
+eraseValue :: Value t -> U.Value
+eraseValue (VBool b) = U.VBool b
+eraseValue (VBV w v) = U.VBV (widthOf w) v
+
+someSort :: SomeExpr -> Ty
+someSort (SomeExpr SBool _) = TBool
+someSort (SomeExpr (SBV w) _) = TBV (fromSNat w)
 
 widthOf :: SNat w -> Int
 widthOf = fromIntegral . fromSNat

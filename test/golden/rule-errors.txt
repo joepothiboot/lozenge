@@ -1,0 +1,191 @@
+--- "("
+t.rules:1:2:
+  |
+1 | (
+  |  ^
+unexpected end of input
+expecting "rule"
+--- "()"
+t.rules:1:2:
+  |
+1 | ()
+  |  ^
+unexpected ')'
+expecting "rule"
+--- "(rule)"
+t.rules:1:6:
+  |
+1 | (rule)
+  |      ^
+unexpected ')'
+expecting rule name
+--- "(rule r)"
+t.rules:1:8:
+  |
+1 | (rule r)
+  |        ^
+unexpected ')'
+expecting expression
+--- "(rule r ?x)"
+t.rules:1:11:
+  |
+1 | (rule r ?x)
+  |           ^
+unexpected ')'
+expecting "=>"
+--- "(rule r (not ?x) => )"
+t.rules:1:21:
+  |
+1 | (rule r (not ?x) => )
+  |                     ^
+unexpected ')'
+expecting expression
+--- "(rule r (not ?x) ?x)"
+t.rules:1:18:
+  |
+1 | (rule r (not ?x) ?x)
+  |                  ^^
+unexpected "?x"
+expecting "=>"
+--- "(rule r (not ?x) => ?x"
+t.rules:1:23:
+  |
+1 | (rule r (not ?x) => ?x
+  |                       ^
+unexpected end of input
+expecting ":if" or ')'
+--- "(rule r (not ?x) => ?x))"
+t.rules:1:24:
+  |
+1 | (rule r (not ?x) => ?x))
+  |                        ^
+unexpected ')'
+expecting '(' or end of input
+--- "(rulex r (not ?x) => ?x)"
+t.rules:1:6:
+  |
+1 | (rulex r (not ?x) => ?x)
+  |      ^
+unexpected 'x'
+expecting "rule"
+--- "(rule r! (not ?x) => ?x)"
+t.rules:1:8:
+  |
+1 | (rule r! (not ?x) => ?x)
+  |        ^^^^^
+unexpected "! (no"
+expecting expression
+--- "(add ?x ?y)"
+t.rules:1:2:
+  |
+1 | (add ?x ?y)
+  |  ^^^^
+unexpected "add "
+expecting "rule"
+--- "(rule r (not x) => x)"
+t.rules:1:14:
+  |
+1 | (rule r (not x) => x)
+  |              ^^^^^
+unexpected "x) =>"
+expecting expression
+--- "(rule r (not ? x) => ?x)"
+t.rules:1:15:
+  |
+1 | (rule r (not ? x) => ?x)
+  |               ^
+unexpected space
+expecting identifier
+--- "(rule r (not ?1x) => ?x)"
+t.rules:1:15:
+  |
+1 | (rule r (not ?1x) => ?x)
+  |               ^
+unexpected '1'
+expecting identifier
+--- "(rule r (not ?x) => ?x :when (ult ?x ?x))"
+t.rules:1:24:
+  |
+1 | (rule r (not ?x) => ?x :when (ult ?x ?x))
+  |                        ^
+unexpected ':'
+expecting ":if" or ')'
+--- "(rule r (not ?x) => ?x :if)"
+t.rules:1:27:
+  |
+1 | (rule r (not ?x) => ?x :if)
+  |                           ^
+unexpected ')'
+expecting expression
+--- "(rule r (not ?x) => ?x :if (ult ?x ?x) :if (ult ?x ?x))"
+t.rules:1:40:
+  |
+1 | (rule r (not ?x) => ?x :if (ult ?x ?x) :if (ult ?x ?x))
+  |                                        ^
+unexpected ':'
+expecting ')'
+--- "(rule r (add ?x (const wx 1)) => ?x)"
+t.rules:1:25:
+  |
+1 | (rule r (add ?x (const wx 1)) => ?x)
+  |                         ^
+unexpected 'x'
+expecting "w"
+--- "(rule r (add ?x (const W 1)) => ?x)"
+t.rules:1:24:
+  |
+1 | (rule r (add ?x (const W 1)) => ?x)
+  |                        ^
+unexpected 'W'
+expecting "w" or width
+--- "(rule r (add ?x (const w)) => ?x)"
+t.rules:1:25:
+  |
+1 | (rule r (add ?x (const w)) => ?x)
+  |                         ^
+unexpected ')'
+expecting value
+--- "(rule r (add ?x (const 8 256)) => ?x)"
+t.rules:1:26:
+  |
+1 | (rule r (add ?x (const 8 256)) => ?x)
+  |                          ^
+value 256 does not fit in 8 bits
+--- "(rule r (add ?x ; no\n (const w 1)) => ?x)"
+t.rules:1:17:
+  |
+1 | (rule r (add ?x ; no
+  |                 ^^^^^
+unexpected "; no<newline>"
+expecting expression
+--- "(rule r (not ?x) => ?x) junk"
+t.rules:1:25:
+  |
+1 | (rule r (not ?x) => ?x) junk
+  |                         ^
+unexpected 'j'
+expecting '(' or end of input
+--- "(rule r ?x => ?x)"
+t.rules:1:1:
+  |
+1 | (rule r ?x => ?x)
+  | ^
+rule r: cannot infer the sort of ?x
+--- "\n  (rule r (ult ?x ?y) => ?x)"
+t.rules:2:3:
+  |
+2 |   (rule r (ult ?x ?y) => ?x)
+  |   ^
+rule r: lhs has sort Bool but rhs has sort BV w
+--- "(rule r (add ?x (const 8 0)) => (add ?x (const w 0)))"
+t.rules:1:1:
+  |
+1 | (rule r (add ?x (const 8 0)) => (add ?x (const w 0)))
+  | ^
+rule r: mixes the width placeholder w with width 8
+--- "(rule r (not ?x) => ?x)\n(rule r (neg ?x) => ?x)"
+t.rules:2:1:
+  |
+2 | (rule r (neg ?x) => ?x)
+  | ^
+duplicate rule name r
