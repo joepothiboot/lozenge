@@ -200,6 +200,19 @@ Symptoms only. Ask for a hint if one stops you.
    to: `Pattern match is redundant`, then
    `Inaccessible code in a pattern with constructor: VBV :: ... Couldn't match type ‘TBool’ with ‘TBV w’`.
 
+## Decisions
+
+- `GADTs` in `Typecheck` and `EvalT`: both match on `SingTy`, `TExpr` or
+  `Value`, and it also turns on the `MonoLocalBinds` that `-Wall` asks for.
+- `DataKinds` in `Typecheck`: `sameWidth`'s signature names `'TBV w`.
+- `Eval` exports `unOp`, `binOp` and `cmpOp`, so `eval` and `evalT` share one
+  set of arithmetic. They work on `Integer`s and carry no `EvalError`.
+- `Typed` exports `widthOf`, and `Typecheck` exports `checkTy`: `typecheck` and
+  `checkEnv` must agree on what `InvalidSort` means. Neither is named `tyOf` or
+  `withSing`, which `test/TExprGen.hs` defines and would clash with.
+- `evalT`: `TIte` evaluates only the selected branch. `eval` has to evaluate
+  both to report errors, but `evalT` can't fail, so the results are the same.
+
 ## Shortcuts
 
 - **`Typed`: the types allow widths outside 1..64 and payloads outside

@@ -8,12 +8,15 @@ module Lozenge.Typed (
   TExpr (..),
   SomeExpr (..),
   erase,
+  widthOf,
 )
 where
 
 import Data.Text (Text)
 import GHC.TypeLits (Nat, SNat)
-import Lozenge.Expr (BinOp, CmpOp, Expr, UnOp)
+import GHC.TypeNats (fromSNat)
+import Lozenge.Expr (BinOp, CmpOp, Expr (..), UnOp)
+import Lozenge.Expr qualified as U
 
 data Ty
   = TBool
@@ -52,4 +55,13 @@ data SomeExpr where
 deriving instance Show SomeExpr
 
 erase :: TExpr t -> Expr
-erase = error "TODO: erase"
+erase (TVar _ x) = Var x
+erase (TLit (VBool b)) = Lit (U.VBool b)
+erase (TLit (VBV w v)) = Lit (U.VBV (widthOf w) v)
+erase (TUn op a) = Un op (erase a)
+erase (TBin op a b) = Bin op (erase a) (erase b)
+erase (TCmp op a b) = Cmp op (erase a) (erase b)
+erase (TIte c t e) = Ite (erase c) (erase t) (erase e)
+
+widthOf :: SNat w -> Int
+widthOf = fromIntegral . fromSNat

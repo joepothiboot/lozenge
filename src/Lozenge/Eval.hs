@@ -1,6 +1,9 @@
 module Lozenge.Eval (
   EvalError (..),
   eval,
+  unOp,
+  binOp,
+  cmpOp,
 )
 where
 
