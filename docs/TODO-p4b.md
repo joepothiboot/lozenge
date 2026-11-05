@@ -27,6 +27,23 @@ and `verifyBrute`.
 - **The key test was checked before you start.** For all 30 corpus rules at
   widths 1-6 (180 pairs), z3 agrees with `test/ref/corpus.py`, and every z3
   model is a real counterexample there. A failure is in the Haskell.
+- `OverloadedStrings` in `VerifySmt`: for `Text` literals.
+- **`VerifyBrute` exports `evalSome`.** `VerifySmt` already imports `VerifyBrute`
+  for `Verdict`, so this needs no new module, and `verifyBrute` itself is
+  unchanged. The rest of `confirm` (`checkEnv`, then pre, lhs and rhs) is not
+  shared with `verifyBrute`, which typechecks once and loops over assignments.
+- **A model `toAssignment` rejects is `SolverFailed`**, with its `Left` text: z3
+  gave no usable answer. No test pins this.
+- **A failed `checkEnv` or `typecheck` in `confirm` is
+  `SpuriousCounterexample`.** Neither can fail once `ruleQuery` and
+  `toAssignment` have succeeded, and the model is still not confirmed real.
+- **`toAssignment` does not run `checkTy`.** `verifySmt` only reaches it after
+  `ruleQuery` did. A direct call with a width above `2^63` wraps in
+  `fromIntegral`, and `checkEnv` still rejects that result.
+- **`Unsupported` text:** `width N is outside 1..64` as in `verifyBrute`,
+  `ruleQuery`'s `Left`, or `runZ3`'s `Unknown` text. **`SolverFailed` text:**
+  `runZ3`'s `SolverError` text or `toAssignment`'s `Left`. The tests only check
+  the constructors.
 
 ## 1. `runVerify`
 
@@ -152,6 +169,5 @@ needs z3 on `PATH`.
 
 ## Open questions
 
-- `toAssignment`: the text of each `Left`.
-- `verifySmt`: the text inside `Unsupported` and `SolverFailed`. The tests
-  only check the constructors.
+- `toAssignment`: the text of each `Left`. The tests only check that it is a
+  `Left`.

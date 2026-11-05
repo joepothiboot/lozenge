@@ -1,5 +1,6 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Lozenge.ExprF (
   ExprF (..),
@@ -13,13 +14,18 @@ module Lozenge.ExprF (
 )
 where
 
+import Control.Monad (when)
+import Data.Bifunctor (first)
+import Data.Foldable (fold)
 import Data.Set (Set)
+import Data.Set qualified as Set
 import Data.Text (Text)
-import Lozenge.Expr (BinOp, CmpOp, UnOp, Value)
-import Lozenge.Fix (Fix)
-import Lozenge.Rule (Rule, RuleWidth)
-import Lozenge.Typecheck (Context, TypeError)
-import Lozenge.Typed (SomeExpr, TExpr)
+import Data.Text qualified as T
+import Lozenge.Expr (BinOp, CmpOp, Expr (..), UnOp, Value)
+import Lozenge.Fix (Fix (..), ana, cata)
+import Lozenge.Rule (Rule (..), RuleWidth)
+import Lozenge.Typecheck (Context, TypeError, typecheck)
+import Lozenge.Typed (SomeExpr (..), TExpr, Ty (..), erase, someSort)
 
 data ExprF r
   = VarF Text
@@ -32,19 +38,38 @@ data ExprF r
   deriving stock (Functor, Foldable, Traversable, Eq, Ord, Show)
 
 fromTyped :: TExpr t -> Fix ExprF
-fromTyped = error "TODO: fromTyped"
+fromTyped = ana layer . erase
+  where
+    layer (Var x) = VarF x
+    layer (Lit v) = LitF v
+    layer (Un op a) = UnF op a
+    layer (Bin op a b) = BinF op a b
+    layer (Cmp op a b) = CmpF op a b
+    layer (Ite c t e) = IteF c t e
 
 toTyped :: Context -> Fix ExprF -> Either TypeError SomeExpr
-toTyped = error "TODO: toTyped"
+toTyped ctx = typecheck ctx . cata alg
+  where
+    alg (VarF x) = Var x
+    alg (PVar x) = Var x
+    alg (LitF v) = Lit v
+    alg (UnF op a) = Un op a
+    alg (BinF op a b) = Bin op a b
+    alg (CmpF op a b) = Cmp op a b
+    alg (IteF c t e) = Ite c t e
 
 size :: Fix ExprF -> Int
-size = error "TODO: size"
+size = cata ((1 +) . sum)
 
 depth :: Fix ExprF -> Int
-depth = error "TODO: depth"
+depth = cata ((1 +) . foldr max 0)
 
 vars :: Fix ExprF -> Set Text
-vars = error "TODO: vars"
+vars = cata alg
+  where
+    alg (VarF x) = Set.singleton x
+    alg (PVar x) = Set.singleton x
+    alg l = fold l
 
 data FixRule = FixRule
   { frName :: Text,
@@ -57,4 +82,30 @@ data FixRule = FixRule
   deriving stock (Eq, Show)
 
 ruleToFix :: Rule -> Either Text FixRule
-ruleToFix = error "TODO: ruleToFix"
+ruleToFix r = do
+  lhs <- check (ruleLhs r)
+  rhs <- check (ruleRhs r)
+
+  when (someSort lhs /= someSort rhs) (Left "lhs and rhs have different sorts")
+
+  pre <- traverse check (rulePre r)
+
+  when (any ((/= TBool) . someSort) pre) (Left "the precondition is not Bool")
+
+  pure
+    FixRule
+      { frName = ruleName r,
+        frWidth = ruleWidth r,
+        frVars = ruleVars r,
+        frLhs = patternOf lhs,
+        frRhs = patternOf rhs,
+        frPre = patternOf <$> pre
+      }
+  where
+    check = first (T.pack . show) . typecheck (ruleVars r)
+
+patternOf :: SomeExpr -> Fix ExprF
+patternOf (SomeExpr _ t) = cata alg (fromTyped t)
+  where
+    alg (VarF x) = Fix (PVar x)
+    alg l = Fix l

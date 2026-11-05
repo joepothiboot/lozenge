@@ -17,10 +17,10 @@ deriving instance (Ord (f (Fix f))) => Ord (Fix f)
 deriving instance (Show (f (Fix f))) => Show (Fix f)
 
 cata :: (Functor f) => (f a -> a) -> Fix f -> a
-cata = error "TODO: cata"
+cata alg (Fix l) = alg (cata alg <$> l)
 
 ana :: (Functor f) => (a -> f a) -> a -> Fix f
-ana = error "TODO: ana"
+ana coalg = Fix . fmap (ana coalg) . coalg
 
 para :: (Functor f) => (f (Fix f, a) -> a) -> Fix f -> a
-para = error "TODO: para"
+para alg (Fix l) = alg ((\t -> (t, para alg t)) <$> l)

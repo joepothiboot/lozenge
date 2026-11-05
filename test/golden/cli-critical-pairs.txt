@@ -1,0 +1,235 @@
+add-zero / add-self-to-shl at []
+  peak:  (add (const 8 0) (const 8 0))
+  left:  (const 8 0)
+  right: (shl (const 8 0) (const 8 1))
+  not joined: normal forms (const 8 0) and (shl (const 8 0) (const 8 1)); syntactically different, semantically equal
+
+add-zero / add-to-or at []
+  peak:  (add ?x_53 (const 8 0))
+  left:  ?x_53
+  right: (or ?x_53 (const 8 0))
+  not joined: normal forms ?x_53 and (or ?x_53 (const 8 0)); syntactically different, semantically equal
+
+sub-self / sub-comm at []
+  peak:  (sub ?y_45 ?y_45)
+  left:  (const 8 0)
+  right: (sub ?y_45 ?y_45)
+  joinable: (const 8 0)
+
+sub-self / sub-to-add-neg at []
+  peak:  (sub ?y_51 ?y_51)
+  left:  (const 8 0)
+  right: (add ?y_51 (neg ?y_51))
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+and-ones / not-to-neg at [1]
+  peak:  (and ?x_5 (not (const 8 0)))
+  left:  ?x_5
+  right: (and ?x_5 (neg (const 8 0)))
+  not joined: no normal form within the budget; UNSOUND: x_46 = 0x00, x_5 = 0xff: lhs = 0xff, rhs = 0x00
+
+not-not / not-to-neg at []
+  peak:  (not (not ?x_6))
+  left:  ?x_6
+  right: (neg (not ?x_6))
+  not joined: normal forms ?x_6 and (or ?x_6 (const 8 1)); UNSOUND: x_46 = 0x00, x_6 = 0x00: lhs = 0x00, rhs = 0x01
+
+not-not / not-not at [0]
+  peak:  (not (not (not ?x_42)))
+  left:  (not ?x_42)
+  right: (not ?x_42)
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+not-not / not-to-neg at [0]
+  peak:  (not (not ?x_46))
+  left:  ?x_46
+  right: (not (neg ?x_46))
+  joinable: ?x_46
+
+not-not / de-morgan-and at [0]
+  peak:  (not (not (and ?x_55 ?y_56)))
+  left:  (and ?x_55 ?y_56)
+  right: (not (or (not ?x_55) (not ?y_56)))
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+not-not / de-morgan-or at [0]
+  peak:  (not (not (or ?x_57 ?y_58)))
+  left:  (or ?x_57 ?y_58)
+  right: (not (and (not ?x_57) (not ?y_58)))
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+neg-neg / neg-to-not-add at []
+  peak:  (neg (neg ?x_7))
+  left:  ?x_7
+  right: (add (not (neg ?x_7)) (const 8 1))
+  not joined: normal forms ?x_7 and (or ?x_7 (const 8 1)); syntactically different, semantically equal
+
+neg-neg / neg-neg at [0]
+  peak:  (neg (neg (neg ?x_43)))
+  left:  (neg ?x_43)
+  right: (neg ?x_43)
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+neg-neg / neg-to-not-add at [0]
+  peak:  (neg (neg ?x_49))
+  left:  ?x_49
+  right: (neg (add (not ?x_49) (const 8 1)))
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+sub-comm / sub-self at []
+  peak:  (sub ?x_40 ?x_40)
+  left:  (sub ?x_40 ?x_40)
+  right: (const 8 0)
+  joinable: (const 8 0)
+
+sub-comm / sub-to-add-neg at []
+  peak:  (sub ?x_50 ?y_51)
+  left:  (sub ?y_51 ?x_50)
+  right: (add ?x_50 (neg ?y_51))
+  not joined: no normal form within the budget; UNSOUND: x_50 = 0x02, x_8 = 0x00, y_51 = 0x7d, y_9 = 0x00: lhs = 0x7b, rhs = 0x85
+
+not-to-neg / not-not at []
+  peak:  (not (not ?x_42))
+  left:  (neg (not ?x_42))
+  right: ?x_42
+  not joined: normal forms (or ?x_42 (const 8 1)) and ?x_42; UNSOUND: x_10 = 0x00, x_42 = 0x00: lhs = 0x01, rhs = 0x00
+
+not-to-neg / de-morgan-and at []
+  peak:  (not (and ?x_55 ?y_56))
+  left:  (neg (and ?x_55 ?y_56))
+  right: (or (not ?x_55) (not ?y_56))
+  not joined: no normal form within the budget; UNSOUND: x_10 = 0x00, x_55 = 0xff, y_56 = 0xff: lhs = 0x01, rhs = 0x00
+
+not-to-neg / de-morgan-or at []
+  peak:  (not (or ?x_57 ?y_58))
+  left:  (neg (or ?x_57 ?y_58))
+  right: (and (not ?x_57) (not ?y_58))
+  not joined: no normal form within the budget; UNSOUND: x_10 = 0x00, x_57 = 0x00, y_58 = 0x00: lhs = 0x00, rhs = 0xff
+
+add-self-to-shl / add-zero at []
+  peak:  (add (const 8 0) (const 8 0))
+  left:  (shl (const 8 0) (const 8 1))
+  right: (const 8 0)
+  not joined: normal forms (shl (const 8 0) (const 8 1)) and (const 8 0); syntactically different, semantically equal
+
+add-self-to-shl / add-to-or at []
+  peak:  (add ?y_54 ?y_54)
+  left:  (shl ?y_54 (const 8 1))
+  right: (or ?y_54 ?y_54)
+  not joined: normal forms (shl ?y_54 (const 8 1)) and (or ?y_54 ?y_54); UNSOUND: x_12 = 0x00, x_53 = 0x00, y_54 = 0x54: lhs = 0xa8, rhs = 0x54
+
+neg-to-not-add / neg-neg at []
+  peak:  (neg (neg ?x_43))
+  left:  (add (not (neg ?x_43)) (const 8 1))
+  right: ?x_43
+  not joined: normal forms (or ?x_43 (const 8 1)) and ?x_43; syntactically different, semantically equal
+
+sub-to-add-neg / sub-self at []
+  peak:  (sub ?x_40 ?x_40)
+  left:  (add ?x_40 (neg ?x_40))
+  right: (const 8 0)
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+sub-to-add-neg / sub-comm at []
+  peak:  (sub ?x_44 ?y_45)
+  left:  (add ?x_44 (neg ?y_45))
+  right: (sub ?y_45 ?x_44)
+  not joined: no normal form within the budget; UNSOUND: x_14 = 0x00, x_44 = 0x7d, y_15 = 0x00, y_45 = 0x02: lhs = 0x7b, rhs = 0x85
+
+add-to-or / add-zero at []
+  peak:  (add ?x_36 (const 8 0))
+  left:  (or ?x_36 (const 8 0))
+  right: ?x_36
+  not joined: normal forms (or ?x_36 (const 8 0)) and ?x_36; syntactically different, semantically equal
+
+add-to-or / add-self-to-shl at []
+  peak:  (add ?x_48 ?x_48)
+  left:  (or ?x_48 ?x_48)
+  right: (shl ?x_48 (const 8 1))
+  not joined: normal forms (or ?x_48 ?x_48) and (shl ?x_48 (const 8 1)); UNSOUND: x_17 = 0x00, x_48 = 0x54, y_18 = 0x00: lhs = 0x54, rhs = 0xa8
+
+de-morgan-and / not-to-neg at []
+  peak:  (not (and ?x_19 ?y_20))
+  left:  (or (not ?x_19) (not ?y_20))
+  right: (neg (and ?x_19 ?y_20))
+  not joined: no normal form within the budget; UNSOUND: x_19 = 0xff, x_46 = 0x00, y_20 = 0xff: lhs = 0x00, rhs = 0x01
+
+de-morgan-and / and-ones at [0]
+  peak:  (not (and ?x_41 (not (const 8 0))))
+  left:  (or (not ?x_41) (not (not (const 8 0))))
+  right: (not ?x_41)
+  not joined: no normal form within the budget; syntactically different, semantically equal
+
+de-morgan-or / not-to-neg at []
+  peak:  (not (or ?x_21 ?y_22))
+  left:  (and (not ?x_21) (not ?y_22))
+  right: (neg (or ?x_21 ?y_22))
+  not joined: no normal form within the budget; UNSOUND: x_21 = 0x00, x_46 = 0x00, y_22 = 0x00: lhs = 0xff, rhs = 0x00
+
+ult-self / ult-to-slt at []
+  peak:  (ult ?y_62 ?y_62)
+  left:  false
+  right: (slt ?y_62 ?y_62)
+  not joined: normal forms false and (slt ?y_62 ?y_62); syntactically different, semantically equal
+
+ult-to-slt / ult-self at []
+  peak:  (ult ?x_59 ?x_59)
+  left:  (slt ?x_59 ?x_59)
+  right: false
+  not joined: normal forms (slt ?x_59 ?x_59) and false; syntactically different, semantically equal
+
+ite-same / ite-true at []
+  peak:  (ite true ?y_67 ?y_67)
+  left:  ?y_67
+  right: ?y_67
+  joinable: ?y_67
+
+ite-same / ite-eq-select at []
+  peak:  (ite (= ?y_69 ?y_69) ?y_69 ?y_69)
+  left:  ?y_69
+  right: ?y_69
+  joinable: ?y_69
+
+ite-same / ite-min-to-max at []
+  peak:  (ite (ult ?y_71 ?y_71) ?y_71 ?y_71)
+  left:  ?y_71
+  right: (ite (ult ?y_71 ?y_71) ?y_71 ?y_71)
+  joinable: ?y_71
+
+ite-true / ite-same at []
+  peak:  (ite true ?x_65 ?x_65)
+  left:  ?x_65
+  right: ?x_65
+  joinable: ?x_65
+
+ite-eq-select / ite-same at []
+  peak:  (ite (= ?x_65 ?x_65) ?x_65 ?x_65)
+  left:  ?x_65
+  right: ?x_65
+  joinable: ?x_65
+
+ite-eq-select / eq-self at [0]
+  peak:  (ite (= ?x_60 ?x_60) ?x_60 ?x_60)
+  left:  ?x_60
+  right: (ite true ?x_60 ?x_60)
+  joinable: ?x_60
+
+ite-min-to-max / ite-same at []
+  peak:  (ite (ult ?x_65 ?x_65) ?x_65 ?x_65)
+  left:  (ite (ult ?x_65 ?x_65) ?x_65 ?x_65)
+  right: ?x_65
+  joinable: ?x_65
+
+ite-min-to-max / ult-self at [0]
+  peak:  (ite (ult ?x_59 ?x_59) ?x_59 ?x_59)
+  left:  (ite (ult ?x_59 ?x_59) ?x_59 ?x_59)
+  right: (ite false ?x_59 ?x_59)
+  joinable: ?x_59
+
+ite-min-to-max / ult-to-slt at [0]
+  peak:  (ite (ult ?x_61 ?y_62) ?x_61 ?y_62)
+  left:  (ite (ult ?y_62 ?x_61) ?x_61 ?y_62)
+  right: (ite (slt ?x_61 ?y_62) ?x_61 ?y_62)
+  not joined: normal forms (ite (slt ?y_62 ?x_61) ?x_61 ?y_62) and (ite (slt ?x_61 ?y_62) ?x_61 ?y_62); UNSOUND: x_34 = 0x00, x_61 = 0x00, y_35 = 0x00, y_62 = 0x5f: lhs = 0x5f, rhs = 0x00
+
+39 critical pairs at width 8: 11 joinable, 16 semantically equal, 12 unsound, 0 unchecked

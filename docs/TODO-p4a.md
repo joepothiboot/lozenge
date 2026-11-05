@@ -28,6 +28,19 @@ stand alone.
   passes, which shows the spec is right. The golden tests then tie your output
   to those files. After `unsat`, z3 prints `(error "... model is not
   available")` for `get-value`. The test allows that error, and only that one.
+- `GADTs` in `Smt`: `toSmt` matches on `TExpr` and `Value` constructors.
+  `OverloadedStrings` in `Smt`: for `Text` literals.
+- **Operator names are `Smt`'s own three tables**, not `"bv" <> binOpName op`.
+  The names only happen to line up; with explicit tables, `-Wall` flags a new
+  constructor and nothing can pick up a wrong SMT-LIB name silently.
+- **`ruleQuery` runs `checkTy` on every declared variable first.** Each one
+  gets a `declare-const`, so an unused `TBV 0` would otherwise reach z3 and be
+  rejected, giving `SolverFailed` where `verifyBrute` says `Unsupported`. No
+  test pins this.
+- **`ruleQuery`'s `Left` text** is `show` of the `TypeError`, or
+  `lhs and rhs have different sorts`, or `the precondition is not Bool`, the
+  same text as `verifyBrute`'s `Unsupported`. The tests only check that it is
+  a `Left`.
 
 ## 1. `smtName`
 
@@ -158,5 +171,4 @@ None recorded for this phase.
 
 ## Open questions
 
-- `ruleQuery`: the text of each `Left`. The tests only check that it is a
-  `Left`.
+None.

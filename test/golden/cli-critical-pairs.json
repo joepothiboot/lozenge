@@ -1,0 +1,544 @@
+{
+  "width": 8,
+  "pairs": [
+    {
+      "outer": "add-zero",
+      "inner": "add-self-to-shl",
+      "position": [],
+      "peak": "(add (const 8 0) (const 8 0))",
+      "left": "(const 8 0)",
+      "right": "(shl (const 8 0) (const 8 1))",
+      "join": {
+        "result": "not-joined",
+        "left": "(const 8 0)",
+        "right": "(shl (const 8 0) (const 8 1))"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "add-zero",
+      "inner": "add-to-or",
+      "position": [],
+      "peak": "(add ?x_53 (const 8 0))",
+      "left": "?x_53",
+      "right": "(or ?x_53 (const 8 0))",
+      "join": {
+        "result": "not-joined",
+        "left": "?x_53",
+        "right": "(or ?x_53 (const 8 0))"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "sub-self",
+      "inner": "sub-comm",
+      "position": [],
+      "peak": "(sub ?y_45 ?y_45)",
+      "left": "(const 8 0)",
+      "right": "(sub ?y_45 ?y_45)",
+      "join": { "result": "joined", "normalForm": "(const 8 0)" }
+    },
+    {
+      "outer": "sub-self",
+      "inner": "sub-to-add-neg",
+      "position": [],
+      "peak": "(sub ?y_51 ?y_51)",
+      "left": "(const 8 0)",
+      "right": "(add ?y_51 (neg ?y_51))",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "and-ones",
+      "inner": "not-to-neg",
+      "position": [1],
+      "peak": "(and ?x_5 (not (const 8 0)))",
+      "left": "?x_5",
+      "right": "(and ?x_5 (neg (const 8 0)))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_46": { "width": 8, "value": 0 },
+          "x_5": { "width": 8, "value": 255 }
+        },
+        "lhs": { "width": 8, "value": 255 },
+        "rhs": { "width": 8, "value": 0 }
+      }
+    },
+    {
+      "outer": "not-not",
+      "inner": "not-to-neg",
+      "position": [],
+      "peak": "(not (not ?x_6))",
+      "left": "?x_6",
+      "right": "(neg (not ?x_6))",
+      "join": {
+        "result": "not-joined",
+        "left": "?x_6",
+        "right": "(or ?x_6 (const 8 1))"
+      },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_46": { "width": 8, "value": 0 },
+          "x_6": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 0 },
+        "rhs": { "width": 8, "value": 1 }
+      }
+    },
+    {
+      "outer": "not-not",
+      "inner": "not-not",
+      "position": [0],
+      "peak": "(not (not (not ?x_42)))",
+      "left": "(not ?x_42)",
+      "right": "(not ?x_42)",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "not-not",
+      "inner": "not-to-neg",
+      "position": [0],
+      "peak": "(not (not ?x_46))",
+      "left": "?x_46",
+      "right": "(not (neg ?x_46))",
+      "join": { "result": "joined", "normalForm": "?x_46" }
+    },
+    {
+      "outer": "not-not",
+      "inner": "de-morgan-and",
+      "position": [0],
+      "peak": "(not (not (and ?x_55 ?y_56)))",
+      "left": "(and ?x_55 ?y_56)",
+      "right": "(not (or (not ?x_55) (not ?y_56)))",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "not-not",
+      "inner": "de-morgan-or",
+      "position": [0],
+      "peak": "(not (not (or ?x_57 ?y_58)))",
+      "left": "(or ?x_57 ?y_58)",
+      "right": "(not (and (not ?x_57) (not ?y_58)))",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "neg-neg",
+      "inner": "neg-to-not-add",
+      "position": [],
+      "peak": "(neg (neg ?x_7))",
+      "left": "?x_7",
+      "right": "(add (not (neg ?x_7)) (const 8 1))",
+      "join": {
+        "result": "not-joined",
+        "left": "?x_7",
+        "right": "(or ?x_7 (const 8 1))"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "neg-neg",
+      "inner": "neg-neg",
+      "position": [0],
+      "peak": "(neg (neg (neg ?x_43)))",
+      "left": "(neg ?x_43)",
+      "right": "(neg ?x_43)",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "neg-neg",
+      "inner": "neg-to-not-add",
+      "position": [0],
+      "peak": "(neg (neg ?x_49))",
+      "left": "?x_49",
+      "right": "(neg (add (not ?x_49) (const 8 1)))",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "sub-comm",
+      "inner": "sub-self",
+      "position": [],
+      "peak": "(sub ?x_40 ?x_40)",
+      "left": "(sub ?x_40 ?x_40)",
+      "right": "(const 8 0)",
+      "join": { "result": "joined", "normalForm": "(const 8 0)" }
+    },
+    {
+      "outer": "sub-comm",
+      "inner": "sub-to-add-neg",
+      "position": [],
+      "peak": "(sub ?x_50 ?y_51)",
+      "left": "(sub ?y_51 ?x_50)",
+      "right": "(add ?x_50 (neg ?y_51))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_50": { "width": 8, "value": 2 },
+          "x_8": { "width": 8, "value": 0 },
+          "y_51": { "width": 8, "value": 125 },
+          "y_9": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 123 },
+        "rhs": { "width": 8, "value": 133 }
+      }
+    },
+    {
+      "outer": "not-to-neg",
+      "inner": "not-not",
+      "position": [],
+      "peak": "(not (not ?x_42))",
+      "left": "(neg (not ?x_42))",
+      "right": "?x_42",
+      "join": {
+        "result": "not-joined",
+        "left": "(or ?x_42 (const 8 1))",
+        "right": "?x_42"
+      },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_10": { "width": 8, "value": 0 },
+          "x_42": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 1 },
+        "rhs": { "width": 8, "value": 0 }
+      }
+    },
+    {
+      "outer": "not-to-neg",
+      "inner": "de-morgan-and",
+      "position": [],
+      "peak": "(not (and ?x_55 ?y_56))",
+      "left": "(neg (and ?x_55 ?y_56))",
+      "right": "(or (not ?x_55) (not ?y_56))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_10": { "width": 8, "value": 0 },
+          "x_55": { "width": 8, "value": 255 },
+          "y_56": { "width": 8, "value": 255 }
+        },
+        "lhs": { "width": 8, "value": 1 },
+        "rhs": { "width": 8, "value": 0 }
+      }
+    },
+    {
+      "outer": "not-to-neg",
+      "inner": "de-morgan-or",
+      "position": [],
+      "peak": "(not (or ?x_57 ?y_58))",
+      "left": "(neg (or ?x_57 ?y_58))",
+      "right": "(and (not ?x_57) (not ?y_58))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_10": { "width": 8, "value": 0 },
+          "x_57": { "width": 8, "value": 0 },
+          "y_58": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 0 },
+        "rhs": { "width": 8, "value": 255 }
+      }
+    },
+    {
+      "outer": "add-self-to-shl",
+      "inner": "add-zero",
+      "position": [],
+      "peak": "(add (const 8 0) (const 8 0))",
+      "left": "(shl (const 8 0) (const 8 1))",
+      "right": "(const 8 0)",
+      "join": {
+        "result": "not-joined",
+        "left": "(shl (const 8 0) (const 8 1))",
+        "right": "(const 8 0)"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "add-self-to-shl",
+      "inner": "add-to-or",
+      "position": [],
+      "peak": "(add ?y_54 ?y_54)",
+      "left": "(shl ?y_54 (const 8 1))",
+      "right": "(or ?y_54 ?y_54)",
+      "join": {
+        "result": "not-joined",
+        "left": "(shl ?y_54 (const 8 1))",
+        "right": "(or ?y_54 ?y_54)"
+      },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_12": { "width": 8, "value": 0 },
+          "x_53": { "width": 8, "value": 0 },
+          "y_54": { "width": 8, "value": 84 }
+        },
+        "lhs": { "width": 8, "value": 168 },
+        "rhs": { "width": 8, "value": 84 }
+      }
+    },
+    {
+      "outer": "neg-to-not-add",
+      "inner": "neg-neg",
+      "position": [],
+      "peak": "(neg (neg ?x_43))",
+      "left": "(add (not (neg ?x_43)) (const 8 1))",
+      "right": "?x_43",
+      "join": {
+        "result": "not-joined",
+        "left": "(or ?x_43 (const 8 1))",
+        "right": "?x_43"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "sub-to-add-neg",
+      "inner": "sub-self",
+      "position": [],
+      "peak": "(sub ?x_40 ?x_40)",
+      "left": "(add ?x_40 (neg ?x_40))",
+      "right": "(const 8 0)",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "sub-to-add-neg",
+      "inner": "sub-comm",
+      "position": [],
+      "peak": "(sub ?x_44 ?y_45)",
+      "left": "(add ?x_44 (neg ?y_45))",
+      "right": "(sub ?y_45 ?x_44)",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_14": { "width": 8, "value": 0 },
+          "x_44": { "width": 8, "value": 125 },
+          "y_15": { "width": 8, "value": 0 },
+          "y_45": { "width": 8, "value": 2 }
+        },
+        "lhs": { "width": 8, "value": 123 },
+        "rhs": { "width": 8, "value": 133 }
+      }
+    },
+    {
+      "outer": "add-to-or",
+      "inner": "add-zero",
+      "position": [],
+      "peak": "(add ?x_36 (const 8 0))",
+      "left": "(or ?x_36 (const 8 0))",
+      "right": "?x_36",
+      "join": {
+        "result": "not-joined",
+        "left": "(or ?x_36 (const 8 0))",
+        "right": "?x_36"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "add-to-or",
+      "inner": "add-self-to-shl",
+      "position": [],
+      "peak": "(add ?x_48 ?x_48)",
+      "left": "(or ?x_48 ?x_48)",
+      "right": "(shl ?x_48 (const 8 1))",
+      "join": {
+        "result": "not-joined",
+        "left": "(or ?x_48 ?x_48)",
+        "right": "(shl ?x_48 (const 8 1))"
+      },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_17": { "width": 8, "value": 0 },
+          "x_48": { "width": 8, "value": 84 },
+          "y_18": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 84 },
+        "rhs": { "width": 8, "value": 168 }
+      }
+    },
+    {
+      "outer": "de-morgan-and",
+      "inner": "not-to-neg",
+      "position": [],
+      "peak": "(not (and ?x_19 ?y_20))",
+      "left": "(or (not ?x_19) (not ?y_20))",
+      "right": "(neg (and ?x_19 ?y_20))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_19": { "width": 8, "value": 255 },
+          "x_46": { "width": 8, "value": 0 },
+          "y_20": { "width": 8, "value": 255 }
+        },
+        "lhs": { "width": 8, "value": 0 },
+        "rhs": { "width": 8, "value": 1 }
+      }
+    },
+    {
+      "outer": "de-morgan-and",
+      "inner": "and-ones",
+      "position": [0],
+      "peak": "(not (and ?x_41 (not (const 8 0))))",
+      "left": "(or (not ?x_41) (not (not (const 8 0))))",
+      "right": "(not ?x_41)",
+      "join": { "result": "unknown" },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "de-morgan-or",
+      "inner": "not-to-neg",
+      "position": [],
+      "peak": "(not (or ?x_21 ?y_22))",
+      "left": "(and (not ?x_21) (not ?y_22))",
+      "right": "(neg (or ?x_21 ?y_22))",
+      "join": { "result": "unknown" },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_21": { "width": 8, "value": 0 },
+          "x_46": { "width": 8, "value": 0 },
+          "y_22": { "width": 8, "value": 0 }
+        },
+        "lhs": { "width": 8, "value": 255 },
+        "rhs": { "width": 8, "value": 0 }
+      }
+    },
+    {
+      "outer": "ult-self",
+      "inner": "ult-to-slt",
+      "position": [],
+      "peak": "(ult ?y_62 ?y_62)",
+      "left": "false",
+      "right": "(slt ?y_62 ?y_62)",
+      "join": {
+        "result": "not-joined",
+        "left": "false",
+        "right": "(slt ?y_62 ?y_62)"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "ult-to-slt",
+      "inner": "ult-self",
+      "position": [],
+      "peak": "(ult ?x_59 ?x_59)",
+      "left": "(slt ?x_59 ?x_59)",
+      "right": "false",
+      "join": {
+        "result": "not-joined",
+        "left": "(slt ?x_59 ?x_59)",
+        "right": "false"
+      },
+      "check": { "verdict": "valid" }
+    },
+    {
+      "outer": "ite-same",
+      "inner": "ite-true",
+      "position": [],
+      "peak": "(ite true ?y_67 ?y_67)",
+      "left": "?y_67",
+      "right": "?y_67",
+      "join": { "result": "joined", "normalForm": "?y_67" }
+    },
+    {
+      "outer": "ite-same",
+      "inner": "ite-eq-select",
+      "position": [],
+      "peak": "(ite (= ?y_69 ?y_69) ?y_69 ?y_69)",
+      "left": "?y_69",
+      "right": "?y_69",
+      "join": { "result": "joined", "normalForm": "?y_69" }
+    },
+    {
+      "outer": "ite-same",
+      "inner": "ite-min-to-max",
+      "position": [],
+      "peak": "(ite (ult ?y_71 ?y_71) ?y_71 ?y_71)",
+      "left": "?y_71",
+      "right": "(ite (ult ?y_71 ?y_71) ?y_71 ?y_71)",
+      "join": { "result": "joined", "normalForm": "?y_71" }
+    },
+    {
+      "outer": "ite-true",
+      "inner": "ite-same",
+      "position": [],
+      "peak": "(ite true ?x_65 ?x_65)",
+      "left": "?x_65",
+      "right": "?x_65",
+      "join": { "result": "joined", "normalForm": "?x_65" }
+    },
+    {
+      "outer": "ite-eq-select",
+      "inner": "ite-same",
+      "position": [],
+      "peak": "(ite (= ?x_65 ?x_65) ?x_65 ?x_65)",
+      "left": "?x_65",
+      "right": "?x_65",
+      "join": { "result": "joined", "normalForm": "?x_65" }
+    },
+    {
+      "outer": "ite-eq-select",
+      "inner": "eq-self",
+      "position": [0],
+      "peak": "(ite (= ?x_60 ?x_60) ?x_60 ?x_60)",
+      "left": "?x_60",
+      "right": "(ite true ?x_60 ?x_60)",
+      "join": { "result": "joined", "normalForm": "?x_60" }
+    },
+    {
+      "outer": "ite-min-to-max",
+      "inner": "ite-same",
+      "position": [],
+      "peak": "(ite (ult ?x_65 ?x_65) ?x_65 ?x_65)",
+      "left": "(ite (ult ?x_65 ?x_65) ?x_65 ?x_65)",
+      "right": "?x_65",
+      "join": { "result": "joined", "normalForm": "?x_65" }
+    },
+    {
+      "outer": "ite-min-to-max",
+      "inner": "ult-self",
+      "position": [0],
+      "peak": "(ite (ult ?x_59 ?x_59) ?x_59 ?x_59)",
+      "left": "(ite (ult ?x_59 ?x_59) ?x_59 ?x_59)",
+      "right": "(ite false ?x_59 ?x_59)",
+      "join": { "result": "joined", "normalForm": "?x_59" }
+    },
+    {
+      "outer": "ite-min-to-max",
+      "inner": "ult-to-slt",
+      "position": [0],
+      "peak": "(ite (ult ?x_61 ?y_62) ?x_61 ?y_62)",
+      "left": "(ite (ult ?y_62 ?x_61) ?x_61 ?y_62)",
+      "right": "(ite (slt ?x_61 ?y_62) ?x_61 ?y_62)",
+      "join": {
+        "result": "not-joined",
+        "left": "(ite (slt ?y_62 ?x_61) ?x_61 ?y_62)",
+        "right": "(ite (slt ?x_61 ?y_62) ?x_61 ?y_62)"
+      },
+      "check": {
+        "verdict": "invalid",
+        "assignment": {
+          "x_34": { "width": 8, "value": 0 },
+          "x_61": { "width": 8, "value": 0 },
+          "y_35": { "width": 8, "value": 0 },
+          "y_62": { "width": 8, "value": 95 }
+        },
+        "lhs": { "width": 8, "value": 95 },
+        "rhs": { "width": 8, "value": 0 }
+      }
+    }
+  ]
+}

@@ -37,6 +37,10 @@ tests build their rules as `FixRule`s by hand, so nothing here waits on
   variables to ground terms of depth 2 or less. Every one that unifies the
   pair must factor through your answer, and if you say `Nothing`, none may
   unify.
+- **The occurs check looks only at `PVar`s**, so it can't reuse `vars`, which
+  also returns `VarF` names. `PVar x` unifies with the constant `VarF x`.
+- **`normalise` names a rule once per list entry**, so a rule with a
+  precondition that appears twice is named twice. No test pins this.
 
 ## 1. `applySubst`
 
@@ -242,5 +246,4 @@ normalise :: Int -> [FixRule] -> Fix ExprF -> ([Text], NormalForm)
 
 ## Open questions
 
-- `normalise`: when a rule with a precondition is named twice in the list,
-  whether its name appears twice. The test uses two different names.
+None.

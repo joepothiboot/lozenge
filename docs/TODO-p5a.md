@@ -39,6 +39,15 @@ and the corpus test needs `parseRules`.
   see.
 - **`SomeExpr` is compared by `show`**, as in Phase 4c, because `TExpr` has
   no `Eq` instance.
+- `OverloadedStrings` in `ExprF`: for `Text` literals.
+- **`fromTyped` and `toTyped` go through `Expr`.** `fromTyped` is `ana` after
+  `erase`, and `toTyped` is `typecheck` after a `cata`, so there is no second
+  typechecker and the errors are `typecheck`'s by construction.
+- **`ruleToFix` repeats the checks in `verifyBrute` and `ruleQuery`.** Sharing
+  them means changing those two functions, so this is a third copy, with the
+  same text in each `Left`: `show` of the `TypeError`, `lhs and rhs have
+  different sorts`, or `the precondition is not Bool`. The tests only check
+  that it is a `Left`.
 
 ## 1. `cata`, `ana`, `para`
 
@@ -239,5 +248,4 @@ None recorded for this phase.
 
 ## Open questions
 
-- `ruleToFix`: the text of each `Left`. The tests only check that it is a
-  `Left`.
+None.

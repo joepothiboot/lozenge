@@ -38,6 +38,27 @@ and `joinable` needs `normalise`. `checkPair` needs `toTyped` (5a), `erase`
   the two `checkPair` tests that must not call z3 run without it.
 - **The `renderPair` golden was written by hand**, from pairs built in the
   test, so it does not depend on `criticalPairs`.
+- `OverloadedStrings` in `Critical`: for `Text` literals.
+- **`criticalPairs` renames every rule twice up front**, one copy as outer and
+  one as inner, from one counter, so the loop stays pure. The fresh numbers
+  therefore depend on the whole rule list, and
+  `test/golden/cli-critical-pairs.*` records them.
+- **`rename` counts `VarF` names too**, as its spec says ("every name"), using
+  `vars`. A constant is not renamed but takes a counter value, so the only
+  effect is a gap in the numbering.
+- **Positions are in pre-order:** a node, then each child's positions in turn,
+  as in the `ite-ult-self` derivation. No test observes this order.
+- **`cpVars` keeps variables the unifier eliminated**, as the spec's union
+  says. A counterexample therefore lists them too, such as `x_46` below.
+- **`checkPair` passes a `Fixed` rule named `<outer>/<inner>`.** `Fixed` is what
+  makes `verifySmt` keep the pair's written width. A failed conversion is
+  `Unsupported` with `show` of the `TypeError`, such as `UnboundVar "a"`.
+- **`renderPair` prints terms with its own `cata`**, not `render`, which breaks
+  lines past 80 columns and would break the five-line layout. Up to 80 columns
+  the text is the same.
+- **`renderPair` prints `NotJoinable (Joined t) v`** as `joinable: <t>; <check>`,
+  which `checkPair` never builds. A position is `show` of the list, such as
+  `[0,1]`.
 
 ## 1. `rename`
 
@@ -283,9 +304,4 @@ When everything passes, run `criticalPairs` on the valid corpus rules
 
 ## Open questions
 
-- `criticalPairs`: the order of positions within one lhs. No test has
-  pairs at two positions of one lhs whose order is observed.
-- `checkPair`: the name and `RuleWidth` of the rule passed to `verifySmt`,
-  and the text of the `Unsupported` message.
-- `renderPair`: the line for `NotJoinable (Joined t) v`, which `checkPair`
-  never builds, and how a position with two or more indices is printed.
+None.

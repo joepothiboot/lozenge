@@ -5,6 +5,7 @@ module Lozenge.VerifyBrute (
   Assignment,
   assignmentCap,
   verifyBrute,
+  evalSome,
   renderVerdict,
 )
 where
