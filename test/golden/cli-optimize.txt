@@ -1,0 +1,3 @@
+(shl x (const 8 1))
+cost 13 -> 3 (saturated)
+not used at width 8: sub-comm, not-to-neg, shl-4-zero, add-to-or, ult-to-slt, slt-zero-off-by-one, ite-min-to-max, sub-zero-weak-pre

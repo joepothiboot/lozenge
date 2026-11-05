@@ -31,6 +31,11 @@ question). Ask for the next rung when you want it.
   model test against a buggy union-find written in the test file, and checks
   that QuickCheck shrinks it to 5 steps. It passes now, before you write
   anything. If it ever fails, the shrinker broke, not your code.
+- **The arrays start with capacity 1**, so doubling needs no special case for
+  an empty array.
+- **`find` and `union` don't check their element.** An `Int` past the capacity
+  raises `array`'s index error, and one between the count and the capacity
+  reads an unused slot. No test passes either; "Shortcuts" names the ceiling.
 
 ## 1. `newUF` and `parents`
 
@@ -169,7 +174,5 @@ union :: UF s -> Int -> Int -> ST s Int
 
 ## Open questions
 
-- `find`, `union`: what an element outside `0 .. count - 1` does. No test
-  passes one.
 - Why `ST` and not `State`: the module Haddock gave the reason, and it was
   removed before it was committed.

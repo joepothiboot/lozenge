@@ -47,6 +47,29 @@ too. The tests build terms with the `Fix` constructor, so they don't need 5a.
   closes it under congruence by brute force, and compares every pair of added
   terms. About 1 program in 4 has a congruence the program didn't name; the
   test requires 10% (`checkCoverage`).
+- `OverloadedStrings` in `EGraph`: for the `Text` literals in `checkInvariants`.
+- **Invariant 1 is the converse of invariant 2:** every canonical node of a
+  class is in the hash-cons, under that class. So `addNode` can always find a
+  node that exists. The brief's wording is not in the repo, so this is a choice.
+- **Hash-cons keys may be stale after `rebuild`, so invariant 2 canonicalises
+  the key too.** A node with two children is repaired through whichever child
+  changed, and the form that child's parent list holds may not be the current
+  key, so an older key can stay behind. It is harmless: every lookup uses a
+  canonical node, and a stale key has a child that is not a root, so no lookup
+  can reach it.
+- **Invariant 4 calls `parents`**, the one use outside the tests, because the
+  module exports no other way to list every element.
+- **A node with a repeated child is recorded as a parent twice**, once per
+  child in `Foldable` order. `repair` removes the duplicate the first time it
+  runs, so it costs one extra visit at most.
+- **`repair` is one pass over the parents.** For each one it deletes the old key
+  if canonicalising changed it, merges with whatever the hash-cons holds for the
+  new key, and writes the new key. The delete is skipped for an unchanged key,
+  which is rewritten straight away. No test pins that: always deleting passes
+  them all, because a stale parent finds the key and merges while it is there.
+- **`repair` empties the class's parent list first and adds the repaired ones
+  to the current root at the end**, because a merge during the pass can move
+  the class, and writing the list back would lose what the other class brought.
 
 ## 1. `newEGraph` and the representation
 
@@ -247,10 +270,5 @@ rebuild :: (Language f) => EGraph f s -> ST s ()
 
 ## Open questions
 
-- `checkInvariants`: invariant 1. The Decisions call the first three "the
-  brief's three", and only 2 and 3 are described; the brief is not in the
-  repo.
 - Hash-cons values may be stale: the Haddock said why no repair would fix
   that, and it was removed before it was committed.
-- `addNode`: whether a node with a repeated child, such as `(add a a)`, is
-  recorded as a parent of `a` once or twice. Step 3 asks; no test decides.

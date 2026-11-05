@@ -64,6 +64,34 @@ Steps 1 and 2 need nothing outside 6.
   `t xor t`), so the 30% "astSize found a cheaper term" coverage holds by
   construction. It loads its 15 rules once (`propChecked`), because brute
   force over two 8-bit variables is 65536 evaluations a rule.
+- `OverloadedStrings` in `Saturate`: for the `Text` literal in `loadRules`.
+- **`extract` breaks a tie by the smaller node**, in the ascending order
+  `classes` gives. No unit test has a tie.
+- **`extract` finds the root with `equiv`** over the `classes` list, so 6b needs
+  no second export. It costs one `find` pair per class on each call.
+- **`extract` calls `error` for an id the graph never issued.** Its type has no
+  failure case, and every class of a real graph has a term, so only a bare `Int`
+  from elsewhere reaches it (6b's `ClassId` shortcut).
+- **A rule is banned when its matches exceed the threshold, not when they reach
+  it**, as in egg and as the Spec's "over its threshold" reads.
+- **The iteration that bans a rule drops that rule's matches and counts as
+  hiding it**, as in egg. Applying them would defeat the ban on the iteration
+  when the rule is largest. The ban's length includes that iteration, so
+  `limBan = 1` hides the rule only there.
+- **The threshold counts `ematch`'s results**, before preconditions are decided.
+- **Preconditions read the literals in the graph when the iteration's search
+  ran**, so a literal that an apply adds is seen in the next iteration.
+- **"Changed nothing" counts nodes as `classes` does**, canonical and
+  deduplicated, the same count as `satNodes`.
+- **`loadRules`' reasons.** A width outside 1 to 64 gives `verifyBrute`'s
+  `unsupported: width ...` through `renderVerdict`; `ruleToFix`'s `Left` is passed
+  on as it is. `verifyBrute` checks the same things first, so neither is reached
+  by a test.
+- **`loadRules` also refuses a rhs variable the lhs does not bind.** `parseRules`
+  rejects these, but `Rule`'s constructor is public, and `verifyBrute` accepts
+  `(mul ?x 0) => (mul ?y 0)`. `saturate` would then put a `?y` node in the graph.
+- **`limIters` of 0 or less still runs one iteration**, because the stop check
+  runs after each iteration. No test passes one.
 
 ## 1. `classes`
 
@@ -346,12 +374,11 @@ saturate :: Limits -> [CheckedRule] -> EGraph ExprF s -> ST s SatReport
   every class, with no indexing, so saturation slows down quickly as the
   graph grows; node and iteration limits stop it. Upgrade: indexing or
   relational e-matching (README, "Limitations").
+- **`saturate`: "changed nothing" compares counts**, as the Spec says. Ceiling:
+  in one iteration, a merge that collapses two nodes and a new node in a new
+  class cancel out, so the counts match and `Saturated` can come early. That is
+  sound, but it may miss rewrites. Upgrade: compare the two `classes` lists.
 
 ## Open questions
 
-- `extract`: which node wins a tie between two of equal cost.
-- `saturate`: whether a rule is banned when its matches reach the
-  threshold or only when they exceed it; and whether "changed nothing"
-  counts nodes the way `classes` does (canonical and deduplicated).
-- `loadRules`: the reason text when `instantiate` or `ruleToFix` refuses a
-  rule.
+None.
