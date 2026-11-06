@@ -4,8 +4,10 @@
 
 lozenge is a Haskell workbench for bitvector rewrite rules.
 
-Status: most library functions below are still `error "TODO"` stubs (see
-`docs/TODO-p*.md`). Their tests are pending, not passing.
+Status: `Lozenge.Tensor`, `Lozenge.TensorEval`, `Lozenge.TensorOpt`,
+`Lozenge.Grad`, `Lozenge.Graph`, `Lozenge.Fusion` and `Lozenge.SymExec` are
+still `error "TODO"` stubs (see `docs/TODO-p*.md`). `lozenge-train` and the
+tests that reach those modules cannot pass yet.
 
 - Typed bitvector/boolean IR (widths 1 to 64, SMT-LIB semantics) with a
   parser, a pretty-printer and two evaluators.

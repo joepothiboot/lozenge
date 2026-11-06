@@ -7,12 +7,6 @@ discarding anything, then extracts the cheapest term, so rule order shouldn't
 matter. This page looks for evidence of both on the rules in
 `rules/bitvector.rules`, and measures what each costs.
 
-> **Status: results pending.** The demo builds, but it calls Phase 1–6
-> functions that are still `error "TODO"` stubs, starting with `parseRules`.
-> Every section marked *pending* is filled in by running the demo once
-> those phases pass their tests. Nothing below the method is a measurement
-> yet.
-
 ## Running it
 
 ```
@@ -27,7 +21,7 @@ The source is `app/Demo.hs`. In order, it:
 3. prints the result-size table,
 4. runs the tasty-bench benchmarks.
 
-It needs these functions implemented:
+It uses these functions:
 
 - `parseRules`, `render`, `ruleToFix`, `size`, `normalise` and their
   prerequisites (Phases 1–5);
@@ -80,9 +74,10 @@ separates the two readings of that: smaller than both greedy results
 (`SatBeatsBoth`), or smaller than the worse one and no larger than the better
 (`SatBeatsOne`).
 
-If no candidate up to 5 nodes is a witness, the next step is to add 2 valid
-rules to the corpus that create one, re-verify the corpus, and record that
-here. That hasn't been done: the search has not run yet.
+If no candidate up to 5 nodes were a witness, the next step would be to add 2
+valid rules to the corpus that create one, re-verify the corpus, and record
+that here. That wasn't needed: the search found a witness at size 3, and no
+rules were added.
 
 **Benchmark.** 100 random bitvector terms of exactly 10, 20 and 40 nodes are
 generated with a fixed seed per size, so every run uses the same 300 terms.
@@ -97,33 +92,59 @@ instance, and an orphan instance isn't allowed.
 
 ## Results
 
-### Search (pending)
+### Search
 
-*Paste the demo's search table here: one row per size, with candidate counts
-for each verdict.*
+| size | terms | NoNormalForm | SameGreedy | SatDiffers | SatNotSmaller | SatBeatsOne | SatBeatsBoth |
+|---|---|---|---|---|---|---|---|
+| 1 | 7 | 0 | 7 | 0 | 0 | 0 | 0 |
+| 2 | 10 | 0 | 10 | 0 | 0 | 0 | 0 |
+| 3 | 295 | 0 | 284 | 0 | 0 | 11 | 0 |
 
-### Witness (pending)
+The search stops at the first size with a witness, so sizes 4 and 5 did not
+run. At size 3, saturation was never smaller than both greedy results.
 
-*Paste the witness: the term, both greedy runs (the rules fired and the
-normal form), and both saturation runs (stop reason, iterations, nodes, and
-the extracted term).*
+### Witness
 
-### Result sizes on the benchmark terms (pending)
+```
+witness: (neg (neg x)) (3 nodes)
+  greedy, corpus order: 
+    => x (1 nodes)
+  greedy, reversed: 
+    => (add (not (add (not x) (const 8 1))) (const 8 1)) (7 nodes)
+  saturation, corpus order: Saturated after 2 iterations, 8 nodes
+    => x (1 nodes)
+  saturation, reversed: Saturated after 2 iterations, 8 nodes
+    => x (1 nodes)
+```
 
-*Paste the demo's size table: mean nodes after greedy in each order and after
-saturation, how many greedy runs had no normal form, and how many saturation
-runs hit a limit.*
+This is a `SatBeatsOne` witness. Saturation matches greedy in corpus order and
+beats greedy in reversed order, and it gives the same term in both rule orders.
 
-### Time (pending)
+The text after `greedy, ...:` is the first result of `normalise`: the rules it
+skipped for having a precondition. It is empty because those rules were already
+left out. The demo doesn't print which rules fired.
+
+### Result sizes on the benchmark terms
+
+`result sizes on 3 x 100 random BV terms (mean nodes; saturation: Limits {limIters = 10, limNodes = 10000, limMatches = 1000, limBan = 2})`
+
+| size | greedy, corpus order | greedy, reversed | saturation | no greedy normal form | saturation hit a limit |
+|---|---|---|---|---|---|
+| 10 | 11.7 | 12.6 | 9.2 | 0 | 0 |
+| 20 | 24.0 | 25.6 | 18.6 | 0 | 0 |
+| 40 | 48.9 | 52.3 | 37.4 | 0 | 0 |
+
+### Time
 
 tasty-bench reports a mean time per benchmark and two standard deviations.
-Each benchmark covers 100 terms.
+Each benchmark covers 100 terms. The last column is the ratio of the two means,
+computed from this table.
 
 | term size | greedy, 100 terms | saturation + extraction, 100 terms | saturation / greedy |
 |---|---|---|---|
-| 10 | | | |
-| 20 | | | |
-| 40 | | | |
+| 10 | 672 μs ± 29 μs | 10.8 ms ± 852 μs | 16.1x |
+| 20 | 2.19 ms ± 211 μs | 24.1 ms ± 1.1 ms | 11.0x |
+| 40 | 7.91 ms ± 469 μs | 56.0 ms ± 5.4 ms | 7.1x |
 
 ### Machine
 
@@ -131,7 +152,7 @@ Each benchmark covers 100 terms.
 |---|---|
 | CPU | Apple M2, 8 cores |
 | memory | 8 GB |
-| OS | macOS 27.0.1 |
+| OS | macOS 27.2 |
 | compiler | GHC 9.10.3 (the demo prints its own compiler on its first line) |
 | build | Stack 3.11.1, resolver lts-24.65, tasty-bench 0.4.1 |
 | optimisation | `-O1`, Stack's default; the cabal file sets no `-O` |

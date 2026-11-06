@@ -13,28 +13,43 @@ you can see where the two give different results. The expressions are a
 typed IR over booleans and bitvectors of 1 to 64 bits, with SMT-LIB
 semantics.
 
-## 20-second demo
+## Status
 
-> **Pending.** The output below must come from a real run, and it can't yet:
-> the library functions are still being written (see `docs/TODO-p*.md`), so
-> every command currently stops at `TODO: parseRules`. Once they pass their
-> tests, run `scripts/demo.sh` and paste its output here.
+> **Unfinished.** `Lozenge.Tensor`, `Lozenge.TensorEval`, `Lozenge.TensorOpt`,
+> `Lozenge.Grad`, `Lozenge.Graph`, `Lozenge.Fusion` and `Lozenge.SymExec` are
+> still `error "TODO"` stubs. `lozenge-train` and the tests that reach those
+> modules cannot pass yet. See `docs/TODO-p*.md`.
+
+## 20-second demo
 
 A wrong rule refuted with a counterexample:
 
 ```
-$ lozenge verify rules/bitvector.rules --width 8 --solver both
-(pending: paste the sub-comm lines and the summary from scripts/demo.sh)
+$ stack exec -- lozenge verify rules/bitvector.rules --width 8 --solver both
+Z3 version 5.1.0 - 64 bit (/opt/homebrew/bin/z3)
+...
+sub-comm [brute]: x = 0x00, y = 0x01: lhs = 0xff, rhs = 0x01
+sub-comm [smt]: x = 0x7d, y = 0x02: lhs = 0x7b, rhs = 0x85
+...
+22 valid, 8 invalid, 0 unsupported at width 8
 ```
 
-Greedy rewriting vs equality saturation (`examples/strength.ir`; the full
-experiment is in [examples/greedy-vs-saturation.md](examples/greedy-vs-saturation.md)):
+Greedy rewriting vs equality saturation on `examples/strength.ir`. On this term
+both engines reach the same result.
+[examples/greedy-vs-saturation.md](examples/greedy-vs-saturation.md) has a term
+where rule order changes greedy's result but not saturation's, and the full
+experiment:
 
 ```
-$ lozenge optimize examples/strength.ir --rules rules/bitvector.rules --engine greedy --cost shifts
-(pending)
-$ lozenge optimize examples/strength.ir --rules rules/bitvector.rules --engine egraph --cost shifts
-(pending)
+$ stack exec -- lozenge optimize examples/strength.ir --rules rules/bitvector.rules --engine greedy --cost shifts
+(shl x (const 8 1))
+cost 13 -> 3 (done)
+not used at width 8: sub-comm, not-to-neg, shl-4-zero, add-to-or, ult-to-slt, slt-zero-off-by-one, ite-min-to-max, sub-zero-weak-pre, shl-lshr, lshr-small, ult-succ
+
+$ stack exec -- lozenge optimize examples/strength.ir --rules rules/bitvector.rules --engine egraph --cost shifts
+(shl x (const 8 1))
+cost 13 -> 3 (saturated)
+not used at width 8: sub-comm, not-to-neg, shl-4-zero, add-to-or, ult-to-slt, slt-zero-off-by-one, ite-min-to-max, sub-zero-weak-pre
 ```
 
 ## Training demo: a small MLP
