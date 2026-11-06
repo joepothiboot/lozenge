@@ -220,6 +220,24 @@ lower :: Tensor s -> (Graph, NodeId)
 
 Tests: `-p /Fusion.fuse/`, then `-p '/emitC accepts/'`.
 
+Tests from the p7–p9 review, and the wrong `fuse` each one catches (expected
+kernels under "Derivations"):
+
+- "an add feeding a mul and a matmul is materialised" and "an add feeding a
+  matmul and an add is materialised" catch two rules. One inlines a node when
+  exactly one of its users is elementwise, so the matmul reads a buffer nobody
+  wrote. The other inlines the node and also keeps its kernel, so the add runs
+  twice. The tests take the two users in both orders, so a rule that looks
+  only at the first or last user fails one of them.
+- The shared program "concat (s * x) (matmul s y), s = x + x'" catches the
+  first rule again, through `emitC accepts` and the C differential test.
+- "concat and slice along axis 0 of a 3-D tensor" catches a slice stride that
+  is the next dimension instead of the product of all later ones, and a block
+  size of two dimensions instead of all of them from the axis on. Both are
+  right on every 2-D case and on axes 1 and 2 of a 3-D tensor. The shared
+  program "slice axis 0 (concat axis 0), 3-D" catches them in the C differential
+  test.
+
 - [ ] *Three passes over the reachable nodes: reachability, use counts, then
   materialised or not. Which can share a single walk down from the root?*
 - [ ] *A node's buffer depends on its children's buffers, and an inlined
@@ -270,10 +288,12 @@ fuse :: Graph -> NodeId -> Either Text Program
   what `evalTensor` does.
 - **Tests.** `-p /Fusion.fuse/`: "a chain of adds and muls is one kernel",
   "relu joins a chain", "a node used twice is materialised", "an add
-  feeding a matmul is materialised", "reshape is an alias: no kernel",
-  "reshape breaks a chain", "unreachable nodes are ignored", "concat, slice
-  and transpose fields", "concat along axis 0 is one block", "an ill-shaped
-  graph", "a root that isn't there". Then `-p '/emitC accepts/'`, one case
+  feeding a matmul is materialised", "an add feeding a mul and a matmul is
+  materialised", "an add feeding a matmul and an add is materialised",
+  "reshape is an alias: no kernel", "reshape breaks a chain", "unreachable
+  nodes are ignored", "concat, slice and transpose fields", "concat along
+  axis 0 is one block", "concat and slice along axis 0 of a 3-D tensor", "an
+  ill-shaped graph", "a root that isn't there". Then `-p '/emitC accepts/'`, one case
   per program, and, with Phase 7 done and `cc` on PATH, `-p '/unoptimised/'`.
 
 ## 6. `programCost` and `totalCost`
@@ -439,6 +459,19 @@ reshapeReshape :: TensorRule          -- "reshape-reshape"
 
 Tests: `-p /TensorOpt.optimise/`, then `-p '/optimised/'`.
 
+Tests from the p7–p9 review, and the wrong `optimise` they catch (numbers
+under "Derivations"):
+
+- "worse once fused: (transpose z + transpose z') * transpose z comes back
+  unchanged", and the same program in `-p '/optimise: same shape/'`, catch an
+  `optimise` with no final comparison, one that keeps the input only on an
+  exact tie, and one that compares costs only when the kernel counts tie. Only
+  these two tests catch the last one.
+- "worse once fused: the tree cost prefers (z + z')^T" and "worse once fused:
+  (z + z')^T costs a kernel more" check the premise. If a change to the cost
+  model removes the rewrite that makes this program worse, these fail, instead
+  of the first test silently no longer testing anything.
+
 - [ ] *Copy the graph into the e-graph: each `Op NodeId` becomes an
   `Op ClassId`. Why do you need a map from `NodeId` to `ClassId`, and why is
   `fmap` with a lookup enough when you go in `graphNodes` order?*
@@ -474,7 +507,10 @@ optimise :: Int -> Graph -> NodeId -> (Graph, NodeId)
 - **Tests.** `-p /TensorOpt.optimise/`: "transpose (transpose (x + x')): 3
   kernels to 1", "x y + x y': 3 kernels to 2", "x y + x' y: 3 kernels to 2",
   "transpose z + transpose z': 3 kernels to 2", "a tie returns the input",
-  "an ill-shaped graph comes back unchanged". Then `-p '/optimise: same
+  "an ill-shaped graph comes back unchanged", "worse once fused: (transpose z
+  + transpose z') * transpose z comes back unchanged", "worse once fused: the
+  tree cost prefers (z + z')^T", "worse once fused: (z + z')^T costs a kernel
+  more". Then `-p '/optimise: same
   shape/'`, one case per program, and, with `cc`, `-p '/optimised/'`.
 
 ## 10. Afterwards
@@ -494,6 +530,87 @@ optimise :: Int -> Graph -> NodeId -> (Graph, NodeId)
   right side, so that it computes `MatMul a (Add d b)`. Which test catches it, and why
   can't the type checker? Then make it build `MatMul (Add b d) a`. What
   catches that one?*
+
+## Derivations
+
+Expected values for the tests added after the p7–p9 review, worked out by hand
+from the specs above. `a` and `b` are `[2, 3]`, `c` is `[3, 2]`, and `z` and
+`z'` are `[4, 2]`.
+
+### `fuse`: an add with an elementwise and a non-elementwise user
+
+"an add feeding a mul and a matmul is materialised". `s * a` and `matmul s c`
+have different shapes, so a concat along axis 1 joins them into one root.
+
+| Node | Op | Uses | Result |
+|---|---|---|---|
+| 3 | `Add 0 1` (`s`) | 2: nodes 4 and 5 | two uses, so `TmpBuf 0` |
+| 4 | `Mul 3 0` | 1: node 6 | its user isn't elementwise, so `TmpBuf 1` |
+| 5 | `MatMul 3 2` | 1: node 6 | always a kernel, `TmpBuf 2` |
+| 6 | `Concat 1 4 5` | root | always a kernel, `TmpBuf 3` |
+
+The kernels, in order:
+
+1. `Elementwise 6 (EwAdd (Load (InBuf 0)) (Load (InBuf 1)))`.
+2. `Elementwise 6 (EwMul (Load (TmpBuf 0)) (Load (InBuf 0)))`. `s` is loaded,
+   not inlined.
+3. `MatMulK (TmpBuf 0) (InBuf 2) 2 3 2`, for `[2, 3]` times `[3, 2]`.
+4. `ConcatK (TmpBuf 1) (TmpBuf 2) 2 3 2`. The inputs are `[2, 3]` and `[2, 2]`
+   on axis 1, so there are 2 blocks, of 3 and 2 elements.
+
+"an add feeding a matmul and an add is materialised" is the same graph with the
+users swapped and the mul replaced by an add: node 4 is `MatMul 3 2`, node 5 is
+`Add 3 0`. The kernels are the add, `MatMulK (TmpBuf 0) (InBuf 2) 2 3 2`,
+`Elementwise 6 (EwAdd (Load (TmpBuf 0)) (Load (InBuf 0)))` and
+`ConcatK (TmpBuf 1) (TmpBuf 2) 2 2 3`.
+
+### `fuse`: axis 0 of a 3-D tensor
+
+"concat and slice along axis 0 of a 3-D tensor" joins two `[3, 2, 2]` inputs
+into a `[6, 2, 2]`, then takes start 2, length 3.
+
+- `ConcatK (InBuf 0) (InBuf 1) 1 12 12`. No dimension comes before the axis, so
+  there is 1 block, and each input's block is `3 * 2 * 2 = 12`.
+- `SliceK (TmpBuf 0) 1 24 8 12`. There is 1 block of `6 * 2 * 2 = 24`. One index
+  of axis 0 covers `2 * 2 = 4` elements, so `from` is `2 * 4 = 8` and `count` is
+  `3 * 4 = 12`.
+
+### `optimise`: a program that gets worse under the tree cost
+
+The program is `(z^T + z'^T) * z^T`. `transposeAdd` puts `(z + z')^T` in the
+class of `z^T + z'^T`.
+
+Tree cost of that class, where a `[4, 2]` transpose owns
+`kernelWeight + 2 * 8 = 1016`:
+
+- `z^T + z'^T`: `1016 + 1016 + 1 = 2033`.
+- `(z + z')^T`: `1 + 1016 = 1017`. Extraction picks this one.
+
+Real cost, once fused:
+
+| Kernel | Input | Elements | Rewritten | Elements |
+|---|---|---|---|---|
+| 1 | `z^T` | 16 | `z + z'` | 24 |
+| 2 | `z'^T` | 16 | `(z + z')^T` | 16 |
+| 3 | `(z^T + z'^T) * z^T`, 2 buffers loaded | 24 | `z^T` | 16 |
+| 4 | | | `(z + z')^T * z^T`, 2 buffers loaded | 24 |
+| Total | 3 kernels, 56 elements: **3056** | | 4 kernels, 80 elements: **4080** | |
+
+The tree cost misses two things: `z^T` is shared, so it is paid for once
+whatever the rewrite does, and in the input the add fuses into the mul, so it
+needs no kernel of its own.
+
+### What the older tests already caught
+
+Gap 2 of the p7–p9 review says no `optimise` test fails if the final comparison
+is skipped. Run against a throwaway implementation written from the specs here
+(never committed), that is too strong: an `optimise` with no comparison already
+fails "a tie returns the input", and it and one that keeps the input only on a
+tie both fail "relu (x y + x y')" in `-p '/optimise: same shape/'`. That program
+goes from 3 kernels and 76 elements to 3 kernels and 78, so the check rested on a
+margin of 2 elements with the kernel count unchanged. No older program gets
+worse in its kernel count, which is why an `optimise` that compares costs only
+on a kernel tie passed them all. The new program fails it by 1024.
 
 ## Shortcuts
 

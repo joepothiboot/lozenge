@@ -153,13 +153,14 @@ evalTensor :: (Ord a, Num a) => Inputs a -> Tensor s -> Either InputError [a]
 - **Laws** (at `Integer`, exactly): `transpose (transpose x) = x`,
   `(x y)^T = y^T x^T`, matmul is associative and distributes over add, add
   and mul commute, reshape and back is the identity, slice undoes concat on
-  axis 0 and axis 1, concat of two slices is the whole, the length is the
-  product of the shape, and `Integer` and `Double` agree.
+  axis 0 and axis 1 (and on axis 0 of a 3-D tensor), concat of two slices is
+  the whole, the length is the product of the shape, and `Integer` and
+  `Double` agree.
 - **Tests.** `-p /Tensor.eval/`: `var` ("a", "unbound", "wrong length",
   "leftmost error wins"), `add and mul` (4), `reshape` (3), `transpose`
-  (4), `matmul` (6), `concat` (6), `slice` (6), each case named by what it
+  (4), `matmul` (6), `concat` (8), `slice` (8), each case named by what it
   computes (for example "axis 1 of [2,3] [2,2]"). Then `-p /Tensor.laws/`
-  (12 properties). `Relu` is checked by `-p relu` in Phase 9.
+  (13 properties). `Relu` is checked by `-p relu` in Phase 9.
 
 ## 3. `Reshape`
 
@@ -192,6 +193,12 @@ Tests: `-p /Tensor.eval.matmul/`.
 
 Tests: `-p /Tensor.eval.concat/`.
 
+Tests from the p7–p9 review: "axis 0 of [2,2,3] [2,2,3]" and "axis 0 of
+[2,2,3] [1,2,3], slice from start 1" catch a block of two dimensions instead of
+every dimension from the axis on. That block is right on every 2-D case and on
+axes 1 and 2 of a 3-D tensor, so no older test sees it. Values are under
+"Derivations".
+
 - [ ] *How many blocks are there, and how long is one block of `a`? Write
   both in terms of `shapeVal` of `a`'s shape and the axis.*
 - [ ] *Which `GHC.TypeLits` function turns the `SNat ax` into a number?*
@@ -200,6 +207,12 @@ Tests: `-p /Tensor.eval.concat/`.
 ## 7. `Slice`
 
 Tests: `-p /Tensor.eval.slice/`, then the whole group, including `-p /Tensor.laws/`.
+
+Tests from the p7–p9 review: "axis 0 of [3,2,2], start 1 length 2", "axis 0 of
+[3,2,2], start 2 length 1" and the law "slice undoes concat, axis 0 of 3-D,
+start 3" catch a stride that is the next dimension instead of the product of
+all later dimensions. That stride is right on every 2-D case and on axes 1 and 2
+of a 3-D tensor, so no older test sees it. Values are under "Derivations".
 
 - [ ] *The blocks are the same as for concat. Inside a block, one index of
   axis `ax` covers how many elements? Which `take` and `drop` keep indices
@@ -222,6 +235,24 @@ Tests: `-p /Tensor.eval.slice/`, then the whole group, including `-p /Tensor.law
   such as `ghc-typelits-natnormalise` add?*
 - [ ] *Add a tenth file to `test/should-fail/`, say `MatMul` of a
   `'[2, 3]` with a `'[3]`. Predict GHC's message before you run it.*
+
+## Derivations
+
+Expected values for the axis 0 tests on 3-D tensors, worked out by hand and
+checked in Python on nested lists, where a slice of the outer list is a slice of
+axis 0. `t` holds `1 .. 12`.
+
+- **`t` as `[3, 2, 2]`** is `[[[1,2],[3,4]], [[5,6],[7,8]], [[9,10],[11,12]]]`.
+  One index of axis 0 covers `2 * 2 = 4` elements.
+  - Start 1, length 2: skip 4, keep 8, giving `5 .. 12`.
+  - Start 2, length 1: skip 8, keep 4, giving `9 .. 12`.
+- **`t` as `[2, 2, 3]`.** One index of axis 0 covers `2 * 3 = 6` elements. There
+  is one block on axis 0, so concat appends the second list to the first.
+  - Concat with itself gives `1 .. 12`, then `1 .. 12`, as a `[4, 2, 3]`.
+  - Start 1, length 1 is `7 .. 12`, and appending it gives `1 .. 12`, then
+    `7 .. 12`, as a `[3, 2, 3]`.
+- **The law.** Two `[3, 2, 2]`s concatenated are a `[6, 2, 2]`, whose indices
+  3 to 5 are exactly the second tensor.
 
 ## Shortcuts
 

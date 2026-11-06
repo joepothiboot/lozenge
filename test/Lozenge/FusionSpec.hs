@@ -38,6 +38,30 @@ tests =
                     [Elementwise 6 (EwAdd (ld (InBuf 0)) (ld (InBuf 1))), MatMulK (TmpBuf 0) (InBuf 2) 2 3 2]
                     (TmpBuf 1)
                 ),
+          testCase "an add feeding a mul and a matmul is materialised" $
+            fuse (build [inA, inB, inC, Add 0 1, Mul 3 0, MatMul 3 2, Concat 1 4 5]) 6
+              @?= Right
+                ( Program
+                    [("a", 6), ("b", 6), ("c", 6)]
+                    [ Elementwise 6 (EwAdd (ld (InBuf 0)) (ld (InBuf 1))),
+                      Elementwise 6 (EwMul (ld (TmpBuf 0)) (ld (InBuf 0))),
+                      MatMulK (TmpBuf 0) (InBuf 2) 2 3 2,
+                      ConcatK (TmpBuf 1) (TmpBuf 2) 2 3 2
+                    ]
+                    (TmpBuf 3)
+                ),
+          testCase "an add feeding a matmul and an add is materialised" $
+            fuse (build [inA, inB, inC, Add 0 1, MatMul 3 2, Add 3 0, Concat 1 4 5]) 6
+              @?= Right
+                ( Program
+                    [("a", 6), ("b", 6), ("c", 6)]
+                    [ Elementwise 6 (EwAdd (ld (InBuf 0)) (ld (InBuf 1))),
+                      MatMulK (TmpBuf 0) (InBuf 2) 2 3 2,
+                      Elementwise 6 (EwAdd (ld (TmpBuf 0)) (ld (InBuf 0))),
+                      ConcatK (TmpBuf 1) (TmpBuf 2) 2 2 3
+                    ]
+                    (TmpBuf 3)
+                ),
           testCase "reshape is an alias: no kernel" $
             fuse (build [inA, Reshape [6] 0]) 1 @?= Right (Program [("a", 6)] [] (InBuf 0)),
           testCase "reshape breaks a chain" $
@@ -60,6 +84,14 @@ tests =
                 ),
           testCase "concat along axis 0 is one block" $
             fuse (build [inA, inB, Concat 0 0 1]) 2 @?= Right (Program [("a", 6), ("b", 6)] [ConcatK (InBuf 0) (InBuf 1) 1 6 6] (TmpBuf 0)),
+          testCase "concat and slice along axis 0 of a 3-D tensor" $
+            fuse (build [Input "t" [3, 2, 2], Input "u" [3, 2, 2], Concat 0 0 1, Slice 0 2 3 2]) 3
+              @?= Right
+                ( Program
+                    [("t", 12), ("u", 12)]
+                    [ConcatK (InBuf 0) (InBuf 1) 1 12 12, SliceK (TmpBuf 0) 1 24 8 12]
+                    (TmpBuf 1)
+                ),
           testCase "an ill-shaped graph" $ assertBool "expected Left" (isLeft (fuse (build [inA, inC, Add 0 1]) 2)),
           testCase "a root that isn't there" $ assertBool "expected Left" (isLeft (fuse (build [inA]) 5))
         ],

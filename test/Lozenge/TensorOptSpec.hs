@@ -80,7 +80,20 @@ tests =
              in (graphNodes g', r') @?= (graphNodes g, r),
           testCase "an ill-shaped graph comes back unchanged" $
             let g = build [Input "a" [2, 3], Input "b" [3, 2], Add 0 1]; (g', r') = optimise 8 g 2
-             in (graphNodes g', r') @?= (graphNodes g, 2)
+             in (graphNodes g', r') @?= (graphNodes g, 2),
+          testCase "worse once fused: (transpose z + transpose z') * transpose z comes back unchanged" $
+            let (g, r) = progGraph "(transpose z + transpose z') * transpose z"; (g', r') = optimise 8 g r
+             in (graphNodes g', r') @?= (graphNodes g, r),
+          testCase "worse once fused: the tree cost prefers (z + z')^T" $ do
+            let input = localCost (Input "z" [4, 2])
+                transposed = localCost (Transpose input)
+            localCost (Add transposed transposed) @?= Costed (2 * (kernelWeight + 16) + 1) [2, 4]
+            localCost (Transpose (localCost (Add input input))) @?= Costed (kernelWeight + 16 + 1) [2, 4],
+          testCase "worse once fused: (z + z')^T costs a kernel more" $ do
+            let (g, r) = progGraph "(transpose z + transpose z') * transpose z"
+                rewritten = build [Input "z" [4, 2], Input "z'" [4, 2], Add 0 1, Transpose 2, Transpose 0, Mul 3 4]
+            cost g r @?= Just (3 * kernelWeight + 56)
+            cost rewritten 5 @?= Just (4 * kernelWeight + 80)
         ],
       testGroup
         "optimise: same shape, never more expensive"

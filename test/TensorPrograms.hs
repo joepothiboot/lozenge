@@ -26,6 +26,13 @@ z, z' :: Tensor '[4, 2]
 z = Var "z"
 z' = Var "z'"
 
+s :: Tensor '[2, 3]
+s = Add x x'
+
+r, r' :: Tensor '[3, 2, 2]
+r = Reshape @'[3, 2, 2] y
+r' = Reshape @'[3, 2, 2] y'
+
 programs :: [Prog]
 programs =
   [ Prog "x y + x y'" (Add (MatMul x y) (MatMul x y')),
@@ -38,7 +45,10 @@ programs =
     Prog "reshape (reshape x)" (Reshape @'[6] (Reshape @'[3, 2] x)),
     Prog "x" x,
     Prog "relu (x y + x y')" (Relu (Add (MatMul x y) (MatMul x y'))),
-    Prog "relu (x + x') * x" (Mul (Relu (Add x x')) x)
+    Prog "relu (x + x') * x" (Mul (Relu (Add x x')) x),
+    Prog "concat (s * x) (matmul s y), s = x + x'" (Concat (natSing @1) (Mul s x) (MatMul s y)),
+    Prog "(transpose z + transpose z') * transpose z" (Mul (Add (Transpose z) (Transpose z')) (Transpose z)),
+    Prog "slice axis 0 (concat axis 0), 3-D" (Slice (natSing @0) (natSing @2) (natSing @3) (Concat (natSing @0) r r'))
   ]
 
 -- | The inputs every program reads from, with their lengths.

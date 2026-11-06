@@ -85,7 +85,13 @@ tests =
                 (Concat (natSing @1) t t :: Tensor '[2, 4, 3]) ==> [1 .. 6] <> [1 .. 6] <> [7 .. 12] <> [7 .. 12],
               testCase "axis 2 of [2,2,3] [2,2,3]" $
                 (Concat (natSing @2) t t :: Tensor '[2, 2, 6])
-                  ==> concatMap (\r -> r <> r) [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+                  ==> concatMap (\r -> r <> r) [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]],
+              testCase "axis 0 of [2,2,3] [2,2,3]" $
+                (Concat (natSing @0) t t :: Tensor '[4, 2, 3]) ==> [1 .. 12] <> [1 .. 12],
+              testCase "axis 0 of [2,2,3] [1,2,3], slice from start 1" $
+                (Concat (natSing @0) t (Slice (natSing @0) (natSing @1) (natSing @1) t) :: Tensor '[3, 2, 3])
+                  ==> [1 .. 12]
+                  <> [7 .. 12]
             ],
           testGroup
             "slice"
@@ -100,7 +106,11 @@ tests =
               testCase "axis 1 of [2,2,3], row 1" $
                 (Slice (natSing @1) (natSing @1) (natSing @1) t :: Tensor '[2, 1, 3]) ==> [4, 5, 6, 10, 11, 12],
               testCase "axis 2 of [2,2,3], column 2" $
-                (Slice (natSing @2) (natSing @2) (natSing @1) t :: Tensor '[2, 2, 1]) ==> [3, 6, 9, 12]
+                (Slice (natSing @2) (natSing @2) (natSing @1) t :: Tensor '[2, 2, 1]) ==> [3, 6, 9, 12],
+              testCase "axis 0 of [3,2,2], start 1 length 2" $
+                (Slice (natSing @0) (natSing @1) (natSing @2) (Reshape @'[3, 2, 2] t) :: Tensor '[2, 2, 2]) ==> [5 .. 12],
+              testCase "axis 0 of [3,2,2], start 2 length 1" $
+                (Slice (natSing @0) (natSing @2) (natSing @1) (Reshape @'[3, 2, 2] t) :: Tensor '[1, 2, 2]) ==> [9 .. 12]
             ]
         ],
       props $
@@ -117,6 +127,9 @@ tests =
               Slice (natSing @0) (natSing @2) (natSing @2) (Concat (natSing @0) x x') =~= x',
             testProperty "slice undoes concat, axis 1" $
               Slice (natSing @1) (natSing @0) (natSing @4) (Concat (natSing @1) y y') =~= y,
+            testProperty "slice undoes concat, axis 0 of 3-D, start 3" $
+              Slice (natSing @0) (natSing @3) (natSing @3) (Concat (natSing @0) (Reshape @'[3, 2, 2] y) (Reshape @'[3, 2, 2] y'))
+                =~= Reshape @'[3, 2, 2] y',
             testProperty "concat of two slices is the whole" $
               Concat (natSing @1) (Slice (natSing @1) (natSing @0) (natSing @1) x) (Slice (natSing @1) (natSing @1) (natSing @2) x)
                 =~= x,
