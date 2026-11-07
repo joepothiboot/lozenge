@@ -51,6 +51,18 @@ tests pass end to end as soon as you implement this phase.
   keeps it to one function.
 - **Dimensions are `[Int]`**, because `take`, `splitAt` and `replicate` want
   an `Int`.
+- `DataKinds` in `TensorEval`: the pattern signatures `Tensor '[m, n]` name the
+  dimensions of `Transpose` and `MatMul`, which live only in the types.
+- `GADTs` in `TensorEval`: matching on `Tensor`'s constructors needs
+  `MonoLocalBinds`, or GHC warns (`-Wgadt-mono-local-binds`), and `GADTs` turns
+  it on.
+- **`chunks` takes a count and a width, not just a width.** A zero dimension
+  still has to produce its rows: `[2, 0]` times `[0, 3]` is six zeros, since
+  each entry is an empty sum and the result has `product` of its shape
+  elements. Splitting an empty list by width alone gives no rows, so that
+  matmul would return `[]`. No test has a zero inner dimension; a one-off run
+  checked this case, and zero dimensions in matmul, transpose, concat and
+  slice, against values worked out by hand.
 
 ### Compile-fail tests: a GHC subprocess, not `should-not-typecheck`
 

@@ -14,18 +14,19 @@ module Lozenge.Tensor (
 where
 
 import Data.Kind (Type)
+import Data.Proxy (Proxy (..))
 import Data.Text (Text)
 import Data.Type.Bool (If)
-import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, SNat, TypeError, type (*), type (+), type (-), type (<=?))
+import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, SNat, TypeError, natVal, type (*), type (+), type (-), type (<=?))
 
 class KnownShape (s :: [Nat]) where
   shapeVal :: proxy s -> [Int]
 
 instance KnownShape '[] where
-  shapeVal = error "TODO: shapeVal '[]"
+  shapeVal _ = []
 
 instance (KnownNat n, KnownShape ns) => KnownShape (n ': ns) where
-  shapeVal = error "TODO: shapeVal (n ': ns)"
+  shapeVal _ = fromInteger (natVal (Proxy @n)) : shapeVal (Proxy @ns)
 
 type family Product (s :: [Nat]) :: Nat where
   Product '[] = 1
