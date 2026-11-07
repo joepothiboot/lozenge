@@ -16,45 +16,92 @@ module Lozenge.SymExec (
 )
 where
 
+import Control.Monad (ap, foldM)
 import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import Lozenge.Typed (TExpr, Ty (..))
+import Data.Type.Equality (testEquality, (:~:) (Refl))
+import GHC.TypeLits (SNat, natSing)
+import Lozenge.Expr (CmpOp (Eq))
+import Lozenge.Typed (SingTy (..), TExpr (..), Ty (..), Value (..))
 
 type Cond = TExpr 'TBool
 
+true :: Cond
+true = TLit (VBool True)
+
+one, zero :: TExpr ('TBV 1)
+one = TLit (VBV natSing 1)
+zero = TLit (VBV natSing 0)
+
+toBit :: Cond -> TExpr ('TBV 1)
+toBit c = TIte c one zero
+
+fromBit :: TExpr ('TBV 1) -> Cond
+fromBit b = TCmp Eq b one
+
 andC :: Cond -> Cond -> Cond
-andC = error "TODO: andC"
+andC (TLit (VBool True)) c = c
+andC c (TLit (VBool True)) = c
+andC a b = fromBit (TIte a (toBit b) zero)
 
 notC :: Cond -> Cond
-notC = error "TODO: notC"
+notC c = fromBit (TIte c zero one)
+
+orC :: Cond -> Cond -> Cond
+orC a b = notC (andC (notC a) (notC b))
 
 newtype Union a = Union {unUnion :: [(Cond, a)]}
   deriving (Show)
 
 instance Functor Union where
-  fmap = error "TODO: fmap @Union"
+  fmap f (Union es) = Union (map (fmap f) es)
 
 instance Applicative Union where
-  pure = error "TODO: pure @Union"
-  (<*>) = error "TODO: <*> @Union"
+  pure a = Union [(true, a)]
+  (<*>) = ap
 
 instance Monad Union where
-  (>>=) = error "TODO: >>= @Union"
+  Union es >>= f = Union [(andC g h, b) | (g, a) <- es, (h, b) <- unUnion (f a)]
 
 class Mergeable a where
   mrgIte :: Cond -> a -> a -> a
 
 instance Mergeable (TExpr ('TBV w)) where
-  mrgIte = error "TODO: mrgIte @BV"
+  mrgIte = TIte
 
 instance Mergeable (TExpr 'TBool) where
-  mrgIte = error "TODO: mrgIte @Bool"
+  mrgIte c t e = fromBit (TIte c (toBit t) (toBit e))
 
 instance Mergeable (Env w) where
-  mrgIte = error "TODO: mrgIte @Env"
+  mrgIte c l r = Env vars (mrgIte c (envOk l) (envOk r))
+    where
+      vars =
+        Map.mergeWithKey
+          (\_ a b -> Just (mrgIte c a b))
+          (Map.mapWithKey (\x a -> mrgIte c a (input x a)))
+          (Map.mapWithKey (\x b -> mrgIte c (input x b) b))
+          (envVars l)
+          (envVars r)
+
+input :: Text -> TExpr ('TBV w) -> TExpr ('TBV w)
+input x e = TVar (SBV (bvSing e)) x
+
+bvSing :: TExpr ('TBV w) -> SNat w
+bvSing (TVar (SBV w) _) = w
+bvSing (TLit (VBV w _)) = w
+bvSing (TUn _ a) = bvSing a
+bvSing (TBin _ a _) = bvSing a
+bvSing (TIte _ a _) = bvSing a
 
 merge :: (Mergeable a) => Union a -> Union a
-merge = error "TODO: merge"
+merge (Union []) = Union []
+merge (Union (e : es)) = Union [go e es]
+  where
+    go entry [] = entry
+    go (g, v) (n : ns) =
+      let (gr, vr) = go n ns
+       in (orC g gr, mrgIte g v vr)
 
 data Stmt w
   = Assign Text (TExpr ('TBV w))
@@ -71,7 +118,22 @@ data Env w = Env
   deriving (Show)
 
 subst :: Map Text (TExpr ('TBV w)) -> TExpr t -> TExpr t
-subst = error "TODO: subst"
+subst m e@(TVar (SBV w) x) = case Map.lookup x m of
+  Just v | Just Refl <- testEquality (bvSing v) w -> v
+  _ -> e
+subst _ e@(TVar SBool _) = e
+subst _ e@(TLit _) = e
+subst m (TUn op a) = TUn op (subst m a)
+subst m (TBin op a b) = TBin op (subst m a) (subst m b)
+subst m (TCmp op a b) = TCmp op (subst m a) (subst m b)
+subst m (TIte c t e) = TIte (subst m c) (subst m t) (subst m e)
 
 symExec :: Program w -> Union (Env w)
-symExec = error "TODO: symExec"
+symExec = foldM step (Env Map.empty true)
+
+step :: Env w -> Stmt w -> Union (Env w)
+step env (Assign x e) = pure env{envVars = Map.insert x (subst (envVars env) e) (envVars env)}
+step env (Assert c) = pure env{envOk = andC (envOk env) (subst (envVars env) c)}
+step env (If c t e) = Union [(c', (env, t)), (notC c', (env, e))] >>= uncurry (foldM step)
+  where
+    c' = subst (envVars env) c

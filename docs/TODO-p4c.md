@@ -35,6 +35,26 @@ question). Ask for the next rung when you want it.
 - **Tests compare by `show`.** `TExpr` has no `Eq` instance. Where the spec
   fixes the exact term (the `andC` `true` law, `subst`, the order of `>>=`),
   the tests compare `show` output. Everywhere else they ask z3.
+- **Booleans are encoded through a 1-bit vector.** `TIte` returns only
+  bitvectors and `TCmp` is the only way back to a `Cond`, so `toBit c` is
+  `TIte c 1 0` and `fromBit b` is `TCmp Eq b 1`. `andC`, `notC` and the Bool
+  `mrgIte` are built from those two, and `orC` from `andC` and `notC` by
+  De Morgan. Each one uses its arguments once, so the encoding adds a constant
+  amount per call.
+- **`bvSing` reads the width from a term.** `Env` stores no `SNat w`, but every
+  `TExpr ('TBV w)` reaches one through a `TVar` or `TLit` at its leaves, and
+  `TCmp` can't have that type, so the function is total. `subst` uses it to
+  compare widths, and `mrgIte @Env` to build the input `TVar` for a variable
+  only one side assigned. Its name differs from `Lozenge.Typed.widthOf`, which
+  returns an `Int`.
+- **`subst` compares widths with `testEquality` on `SNat`**, from `base`. The
+  `Refl` it returns is what lets GHC accept the map's value at the variable's
+  type, and a different width simply fails the match.
+- **An `If` creates its then path first** (Open question below): guard `c`,
+  then guard `notC c`, as the statement reads. The tests allow either order.
+- **Where no guard holds, `merge` gives the last entry's value** (Open question
+  below): the fold starts from the last entry and never tests its guard. The
+  merged guard is false there, so a caller that checks it never reads the value.
 
 ## 1. `andC` and `notC`
 
@@ -307,6 +327,10 @@ entry whose `m` equals `ite (x <u y) y x`, whose guard is valid, and whose
 - **`Union`'s constructor is exported.** Ceiling: nothing enforces disjoint
   guards; the tests build unions by hand. Upgrade: hide the constructor,
   as Grisette does (see Decisions).
+- **`subst` copies terms instead of naming them.** Ceiling: `x := x + x` run
+  `n` times gives a term with `2^n` leaves once `toSmt` prints it, even though
+  the term is shared in memory. Upgrade: bind each assignment to a fresh name
+  with an SMT-LIB `let` or a `define-fun`.
 
 ## Open questions
 
